@@ -112,6 +112,7 @@ const formatTime = (timestamp: number) => {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: #fff;
 }
 
 .container-wrapper {
