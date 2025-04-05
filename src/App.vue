@@ -5,4 +5,13 @@
   <RouterView />
 </template>
 
-<style scoped></style>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#app {
+  height: 100vh;
+}
+</style>
