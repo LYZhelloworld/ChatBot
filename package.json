@@ -1,22 +1,30 @@
 {
   "name": "chatbot",
   "version": "1.0.0",
-  "description": "A Web UI for interactive chatting with local deployed LLM.",
-  "main": "index.js",
+  "description": "A UI for interactive chatting with local deployed LLM.",
+  "main": "dist/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "start": "npm run build && electron ."
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/LYZhelloworld/ChatBot.git"
   },
   "keywords": [
-    "llm"
+    "llm", "electron", "chatbot"
   ],
   "author": "LYZhelloworld",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/LYZhelloworld/ChatBot/issues"
   },
-  "homepage": "https://github.com/LYZhelloworld/ChatBot"
+  "homepage": "https://github.com/LYZhelloworld/ChatBot",
+  "devDependencies": {
+    "@types/electron": "^1.4.38",
+    "@types/node": "^22.14.0",
+    "electron": "^35.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
 }
