@@ -1,2 +1,2 @@
 # ChatBot
-ChatBot is a UI for interactive chatting with local deployed LLM.
+ChatBot is an interactive chatting tool with local deployed LLM.
