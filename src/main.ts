@@ -1,20 +1,10 @@
-import { app, BrowserWindow } from 'electron';
-import * as path from 'path';
+import { createApp } from 'vue'
+import './style.css'
+import App from './App.vue'
 
-function createWindow() {
-  const win = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js') // optional
-    }
-  });
-
-  win.loadFile('public/index.html');
-}
-
-app.whenReady().then(createWindow);
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
+createApp(App).mount('#app').$nextTick(() => {
+  // Use contextBridge
+  window.ipcRenderer.on('main-process-message', (_event, message) => {
+    console.log(message)
+  })
+})

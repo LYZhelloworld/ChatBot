@@ -1,12 +1,28 @@
 {
   "name": "chatbot",
+  "private": true,
   "version": "1.0.0",
   "description": "A UI for interactive chatting with local deployed LLM.",
-  "main": "dist/main.js",
+  "type": "module",
   "scripts": {
-    "build": "tsc",
-    "start": "npm run build && electron ."
+    "dev": "vite",
+    "build": "vue-tsc && vite build && electron-builder",
+    "preview": "vite preview"
   },
+  "dependencies": {
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.6",
+    "vue-tsc": "^2.0.26",
+    "electron": "^30.0.1",
+    "electron-builder": "^24.13.3",
+    "vite-plugin-electron": "^0.28.6",
+    "vite-plugin-electron-renderer": "^0.14.5"
+  },
+  "main": "dist-electron/main.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/LYZhelloworld/ChatBot.git"
@@ -19,12 +35,5 @@
   "bugs": {
     "url": "https://github.com/LYZhelloworld/ChatBot/issues"
   },
-  "homepage": "https://github.com/LYZhelloworld/ChatBot",
-  "devDependencies": {
-    "@types/electron": "^1.4.38",
-    "@types/node": "^22.14.0",
-    "electron": "^35.1.4",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
-  }
+  "homepage": "https://github.com/LYZhelloworld/ChatBot"
 }
