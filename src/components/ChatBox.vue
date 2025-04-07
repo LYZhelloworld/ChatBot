@@ -24,10 +24,10 @@
           <el-input
             v-model="inputMessage"
             placeholder="输入消息..."
-            @keyup.enter="sendMessage"
+            @keydown="handleKeyDown"
             resize="none"
             type="textarea"
-            autosize
+            :autosize="{ minRows: 1, maxRows: 5 }"
           />
           <el-button
             type="primary"
@@ -59,6 +59,13 @@ onMounted(() => {
   ]
   scrollToBottom()
 })
+
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Enter' && event.ctrlKey) {
+    event.preventDefault()
+    sendMessage()
+  }
+}
 
 // 发送消息
 const sendMessage = () => {
