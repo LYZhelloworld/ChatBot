@@ -1,2 +1,2 @@
-export * from "./console";
-export * from "./bot-config";
+export * from "./console-command";
+export * from "./agent";

@@ -4,12 +4,13 @@ import {
   ChatCompletionAssistantMessageParam,
 } from "openai/resources/chat";
 
-export type ChatMessage =
+export type ChatMessageType =
   | ChatCompletionSystemMessageParam
   | ChatCompletionUserMessageParam
   | ChatCompletionAssistantMessageParam;
 
-export type BotConfigType = {
+export type AgentConfigType = {
+  name: string;
   model: string;
   baseURL: string;
   apiKey: string;
@@ -21,15 +22,6 @@ export type BotConfigType = {
     | {
         type: "text";
         content: string;
-      };
-  history:
-    | {
-        type: "file";
-        path: string;
-      }
-    | {
-        type: "array";
-        content: ChatMessage[];
       };
   temperature?: number;
 };

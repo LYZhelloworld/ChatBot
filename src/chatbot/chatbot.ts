@@ -1,13 +1,13 @@
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/chat";
-import { ChatMessage } from "../types/config";
+import { ChatMessageType } from "../types/config";
 
 export default class ChatBot {
   private client: OpenAI;
   private model: string;
   private systemPrompt: string;
   private temperature: number;
-  private history: ChatMessage[];
+  private history: ChatMessageType[];
 
   private static readonly HISTORY_LIMIT = 20;
   private static readonly MAX_TOKENS = 2048;
@@ -34,24 +34,12 @@ export default class ChatBot {
     this.history = [];
   }
 
-  chat(userInput: string) {
-    this.history.push({ role: "user", content: userInput });
-    return this.getResponse();
-  }
-
-  dumpChatHistory(): ChatMessage[] {
-    return this.history;
-  }
-
-  loadChatHistory(history: ChatMessage[]) {
-    this.history = history;
-  }
-
-  private async *getResponse(): AsyncGenerator<string, string, never> {
+  async *chat(userInput: string) {
     const messages: ChatCompletionMessageParam[] = [
       { role: "system", content: this.systemPrompt },
     ];
     messages.push(...this.history.slice(-ChatBot.HISTORY_LIMIT));
+    messages.push({ role: "user", content: userInput });
 
     const response = await this.client.chat.completions.create({
       model: this.model,
@@ -73,8 +61,17 @@ export default class ChatBot {
     }
 
     responseContent = this.removeThinkTags(responseContent);
+    this.history.push({ role: "user", content: userInput });
     this.history.push({ role: "assistant", content: responseContent });
     return responseContent;
+  }
+
+  dumpChatHistory(): ChatMessageType[] {
+    return this.history;
+  }
+
+  loadChatHistory(history: ChatMessageType[]) {
+    this.history = history;
   }
 
   private removeThinkTags(text: string) {
