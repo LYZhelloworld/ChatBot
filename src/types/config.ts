@@ -14,7 +14,7 @@ export type AgentConfigType = {
   model: string;
   baseURL: string;
   apiKey: string;
-  systemPrompt:
+  systemPrompt?:
     | {
         type: "file";
         path: string;

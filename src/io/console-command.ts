@@ -120,7 +120,9 @@ export default class ConsoleCommand {
     console.log("");
     console.log("Available commands:");
     console.log("/list - List available agents.");
-    console.log("/load <agent-name> - Load an agent.");
+    console.log(
+      "/load <agent-name> - Load an agent. The '<agent-name>' is the folder name under 'agents' folder.",
+    );
     console.log("/history - Show the history of the current agent.");
     console.log("/exit or /bye - Exit the program.");
     console.log("/help or /? - Show this help message.");

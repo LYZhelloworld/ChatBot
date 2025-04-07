@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import ChatBot from "../chatbot/chatbot";
-import { ChatMessageType } from "../types/config";
+import { AgentConfigType, ChatMessageType } from "../types/config";
 
 export default class Agent {
   private static readonly AGENT_FOLDER = path.join(process.cwd(), "agents");
@@ -37,7 +37,7 @@ export default class Agent {
       );
     }
 
-    const configFileContent = JSON.parse(
+    const configFileContent: AgentConfigType = JSON.parse(
       fs.readFileSync(configFilePath, "utf-8"),
     );
 
@@ -46,16 +46,10 @@ export default class Agent {
       configFileContent.baseURL,
       configFileContent.apiKey,
       {
-        systemPrompt:
-          configFileContent.systemPrompt.type === "text"
-            ? configFileContent.systemPrompt.content
-            : fs.readFileSync(
-                path.join(
-                  path.dirname(configFilePath),
-                  configFileContent.systemPrompt.path,
-                ),
-                "utf-8",
-              ),
+        systemPrompt: this.getSystemPrompt(
+          configFileContent.systemPrompt,
+          path.dirname(configFilePath),
+        ),
         temperature: configFileContent.temperature,
       },
     );
@@ -84,6 +78,25 @@ export default class Agent {
 
   save() {
     this.saveHistory(this.bot.dumpChatHistory());
+  }
+
+  private getSystemPrompt(
+    systemPrompt: AgentConfigType["systemPrompt"],
+    agentPath: string,
+  ): string {
+    if (systemPrompt === undefined) {
+      return "";
+    }
+
+    if (systemPrompt.type === "text") {
+      return systemPrompt.content;
+    }
+
+    if (systemPrompt.type === "file") {
+      return fs.readFileSync(path.join(agentPath, systemPrompt.path), "utf-8");
+    }
+
+    return "";
   }
 
   private saveHistory(history: ChatMessageType[]) {
