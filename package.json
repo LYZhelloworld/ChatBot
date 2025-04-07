@@ -1,0 +1,39 @@
+{
+  "name": "chatbot",
+  "private": true,
+  "version": "1.0.0",
+  "description": "An interactive chatting tool with local deployed LLM.",
+  "keywords": [
+    "llm",
+    "chatbot"
+  ],
+  "homepage": "https://github.com/LYZhelloworld/ChatBot#readme",
+  "bugs": {
+    "url": "https://github.com/LYZhelloworld/ChatBot/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LYZhelloworld/ChatBot.git"
+  },
+  "license": "MIT",
+  "author": "LYZhelloworld",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "format": "prettier --write src/**/*.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@typescript-eslint/eslint-plugin": "^8.29.0",
+    "@typescript-eslint/parser": "^8.29.0",
+    "prettier": "^3.5.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "openai": "^4.92.0"
+  }
+}
