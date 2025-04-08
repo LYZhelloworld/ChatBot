@@ -19,17 +19,27 @@
   "author": "LYZhelloworld",
   "type": "commonjs",
   "main": "index.js",
+  "bin": "dist/index.js",
+  "pkg": {
+    "scripts": "dist/**/*.js",
+    "targets": [
+      "latest-win-x64"
+    ],
+    "outputPath": "bin"
+  },
   "scripts": {
     "build": "npm run json-schema && tsc",
     "dev": "npm run json-schema && ts-node src/index.ts",
     "start": "node dist/index.js",
     "format": "prettier --write src/**/*.ts",
-    "json-schema": "typescript-json-schema src/types/**/*.ts * --required --noExtraProps --out src/validators/schema.json"
+    "json-schema": "typescript-json-schema src/types/**/*.ts * --required --noExtraProps --out src/validators/schema.json",
+    "release": "npm run build && pkg ."
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.29.0",
+    "pkg": "^5.8.1",
     "prettier": "^3.5.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
