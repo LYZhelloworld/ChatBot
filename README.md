@@ -79,10 +79,10 @@ Chat history is autosaved under the agent folder with the name `history.json`.
 
 ## Agent File Schema
 - `name`: The name of the agent.
-- `model`: The model used.
+- `model`: The model used by the agent.
 - `baseURL`: The URL of the LLM server API.
-- `apiKey`: The API key used by the LLM server. Please provide an API key with any value if your server is hosted locally.
-- `systemPrompt`: (Optional) The system prompt.
+- `apiKey`: The API key used by the LLM server. Please provide an arbitrary API key if your server is hosted locally.
+- `systemPrompt`: (Optional) The system prompt to be used by the agent. It can be either a file or a text string.
     - If the `type` is `"file"`, please provide a `path` to the prompt file. The path is relative to the directory of the `config.json` file.
         ```json
         {

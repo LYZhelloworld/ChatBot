@@ -1,13 +1,17 @@
 import OpenAI from "openai";
-import { ChatCompletionMessageParam } from "openai/resources/chat";
-import { ChatMessageType } from "../types/config";
+import { ChatHistoryType } from "../types";
+
+type ChatHistoryTypeWithSystem = {
+  role: "user" | "assistant" | "system";
+  content: string;
+}[];
 
 export default class ChatBot {
   private client: OpenAI;
   private model: string;
   private systemPrompt: string;
   private temperature: number;
-  private history: ChatMessageType[];
+  private history: ChatHistoryType;
 
   private static readonly HISTORY_LIMIT = 20;
   private static readonly MAX_TOKENS = 2048;
@@ -35,7 +39,7 @@ export default class ChatBot {
   }
 
   async *chat(userInput: string) {
-    const messages: ChatCompletionMessageParam[] = [
+    const messages: ChatHistoryTypeWithSystem = [
       { role: "system", content: this.systemPrompt },
     ];
     messages.push(...this.history.slice(-ChatBot.HISTORY_LIMIT));
@@ -66,11 +70,11 @@ export default class ChatBot {
     return responseContent;
   }
 
-  dumpChatHistory(): ChatMessageType[] {
+  dumpChatHistory(): ChatHistoryType {
     return this.history;
   }
 
-  loadChatHistory(history: ChatMessageType[]) {
+  loadChatHistory(history: ChatHistoryType) {
     this.history = history;
   }
 
