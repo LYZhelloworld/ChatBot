@@ -4,8 +4,14 @@ import ChatBot from "../chatbot/chatbot";
 import { AgentConfigType, ChatHistoryType } from "../types";
 import { validateAgentConfig, validateChatHistory } from "../validators";
 
+const isPkg =
+  typeof (process as NodeJS.Process & { pkg?: unknown }).pkg !== "undefined";
+
 export default class Agent {
-  private static readonly AGENT_FOLDER = path.join(process.cwd(), "agents");
+  private static readonly BASE_PATH = isPkg
+    ? path.dirname(process.execPath)
+    : path.join(__dirname, "..", "..");
+  private static readonly AGENT_FOLDER = path.join(Agent.BASE_PATH, "agents");
   private static readonly CONFIG_FILE_NAME = "config.json";
   private static readonly HISTORY_FILE_NAME = "history.json";
 
@@ -16,6 +22,16 @@ export default class Agent {
    * List available agents.
    */
   static listAgents() {
+    if (!fs.existsSync(Agent.AGENT_FOLDER)) {
+      return [];
+    }
+
+    if (!fs.statSync(Agent.AGENT_FOLDER).isDirectory()) {
+      throw new Error(
+        `Agent folder '${Agent.AGENT_FOLDER}' is not a directory.`,
+      );
+    }
+
     return fs
       .readdirSync(Agent.AGENT_FOLDER)
       .filter(
