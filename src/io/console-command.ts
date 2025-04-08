@@ -69,6 +69,7 @@ export default class ConsoleCommand {
           console.error("Please provide an agent name to load.");
           this.help();
         }
+        break;
       case "/history":
         this.history();
         break;

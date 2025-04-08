@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
 import ChatBot from "../chatbot/chatbot";
-import { AgentConfigType, ChatMessageType } from "../types/config";
+import { AgentConfigType, ChatHistoryType } from "../types";
+import { validateAgentConfig, validateChatHistory } from "../validators";
 
 export default class Agent {
   private static readonly AGENT_FOLDER = path.join(process.cwd(), "agents");
@@ -37,8 +38,8 @@ export default class Agent {
       );
     }
 
-    const configFileContent: AgentConfigType = JSON.parse(
-      fs.readFileSync(configFilePath, "utf-8"),
+    const configFileContent = validateAgentConfig(
+      JSON.parse(fs.readFileSync(configFilePath, "utf-8")),
     );
 
     this.bot = new ChatBot(
@@ -61,10 +62,19 @@ export default class Agent {
     if (!fs.existsSync(historyFilePath)) {
       this.saveHistory([]);
     } else {
-      const historyContent = JSON.parse(
-        fs.readFileSync(historyFilePath, "utf-8"),
-      );
-      this.bot.loadChatHistory(historyContent);
+      try {
+        const historyContent = validateChatHistory(
+          JSON.parse(fs.readFileSync(historyFilePath, "utf-8")),
+        );
+        this.bot.loadChatHistory(historyContent);
+      } catch (e) {
+        if (e instanceof Error) {
+          console.error("Warning: " + e.message);
+        } else {
+          console.error("Warning: " + e);
+        }
+        console.error("Cannot load history file. History will be empty.");
+      }
     }
   }
 
@@ -99,7 +109,7 @@ export default class Agent {
     return "";
   }
 
-  private saveHistory(history: ChatMessageType[]) {
+  private saveHistory(history: ChatHistoryType) {
     fs.writeFileSync(
       path.join(Agent.AGENT_FOLDER, this.agentName, Agent.HISTORY_FILE_NAME),
       JSON.stringify(history, null, 2),

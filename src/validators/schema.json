@@ -1,0 +1,100 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "AgentConfigType": {
+            "additionalProperties": false,
+            "properties": {
+                "apiKey": {
+                    "description": "The API key used by the LLM server. Please provide an arbitrary API key if your server is hosted locally.",
+                    "type": "string"
+                },
+                "baseURL": {
+                    "description": "The URL of the LLM server API.",
+                    "type": "string"
+                },
+                "model": {
+                    "description": "The model used by the agent.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "The name of the agent.",
+                    "type": "string"
+                },
+                "systemPrompt": {
+                    "anyOf": [
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "path": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "const": "file",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "path",
+                                "type"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "content": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "const": "text",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "content",
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ],
+                    "description": "The system prompt to be used by the agent. It can be either a file or a text string."
+                },
+                "temperature": {
+                    "description": "The temperature used by the model. Default value is 0.7.",
+                    "type": "number"
+                }
+            },
+            "required": [
+                "apiKey",
+                "baseURL",
+                "model",
+                "name"
+            ],
+            "type": "object"
+        },
+        "ChatHistoryType": {
+            "items": {
+                "additionalProperties": false,
+                "properties": {
+                    "content": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "enum": [
+                            "assistant",
+                            "user"
+                        ],
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "content",
+                    "role"
+                ],
+                "type": "object"
+            },
+            "type": "array"
+        }
+    }
+}
+
