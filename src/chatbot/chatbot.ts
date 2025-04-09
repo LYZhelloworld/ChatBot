@@ -8,33 +8,36 @@ type ChatHistoryTypeWithSystem = {
 
 export default class ChatBot {
   private client: OpenAI;
-  private model: string;
   private systemPrompt: string;
   private temperature: number;
   private history: ChatHistoryType;
-
-  private static readonly HISTORY_LIMIT = 20;
-  private static readonly MAX_TOKENS = 2048;
+  private historyLimit: number;
+  private maxTokens: number;
 
   constructor(
-    model: string,
+    private model: string,
     baseURL: string,
     apiKey: string,
     {
       systemPrompt = "",
       temperature = 0.7,
+      historyLimit = 20,
+      maxTokens = 2048,
     }: {
       systemPrompt?: string;
       temperature?: number;
+      historyLimit?: number;
+      maxTokens?: number;
     },
   ) {
     this.client = new OpenAI({
       baseURL: baseURL,
       apiKey: apiKey,
     });
-    this.model = model;
     this.systemPrompt = systemPrompt.trim();
     this.temperature = temperature;
+    this.historyLimit = historyLimit;
+    this.maxTokens = maxTokens;
     this.history = [];
   }
 
@@ -42,7 +45,7 @@ export default class ChatBot {
     const messages: ChatHistoryTypeWithSystem = [
       { role: "system", content: this.systemPrompt },
     ];
-    messages.push(...this.history.slice(-ChatBot.HISTORY_LIMIT));
+    messages.push(...this.history.slice(-this.historyLimit));
     messages.push({ role: "user", content: userInput });
 
     const response = await this.client.chat.completions.create({
@@ -50,7 +53,7 @@ export default class ChatBot {
       messages,
       stream: true,
       temperature: this.temperature,
-      max_completion_tokens: ChatBot.MAX_TOKENS,
+      max_completion_tokens: this.maxTokens,
     });
 
     let responseContent = "";

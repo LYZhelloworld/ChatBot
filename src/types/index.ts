@@ -1,10 +1,5 @@
 export type AgentConfigType = {
   /**
-   * The name of the agent.
-   */
-  name: string;
-
-  /**
    * The model used by the agent.
    */
   model: string;
@@ -36,6 +31,18 @@ export type AgentConfigType = {
    * The temperature used by the model. Default value is 0.7.
    */
   temperature?: number;
+
+  /**
+   * The maximum number of history records to be used as the context. Default value is 20.
+   *
+   * Note that one pair of user-assistant chat history is counted as two records.
+   */
+  historyLimit?: number;
+
+  /**
+   * The maximum number of tokens to be used in the response. Default value is 2048.
+   */
+  maxTokens?: number;
 };
 
 export type ChatHistoryType = {

@@ -12,12 +12,16 @@
                     "description": "The URL of the LLM server API.",
                     "type": "string"
                 },
+                "historyLimit": {
+                    "description": "The maximum number of history records to be used as the context. Default value is 20.\n\nNote that one pair of user-assistant chat history is counted as two records.",
+                    "type": "number"
+                },
+                "maxTokens": {
+                    "description": "The maximum number of tokens to be used in the response. Default value is 2048.",
+                    "type": "number"
+                },
                 "model": {
                     "description": "The model used by the agent.",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "The name of the agent.",
                     "type": "string"
                 },
                 "systemPrompt": {
@@ -67,8 +71,7 @@
             "required": [
                 "apiKey",
                 "baseURL",
-                "model",
-                "name"
+                "model"
             ],
             "type": "object"
         },
