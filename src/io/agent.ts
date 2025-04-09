@@ -15,7 +15,6 @@ export default class Agent {
   private static readonly CONFIG_FILE_NAME = "config.json";
   private static readonly HISTORY_FILE_NAME = "history.json";
 
-  private agentName: string;
   private bot: ChatBot;
 
   /**
@@ -39,18 +38,18 @@ export default class Agent {
       );
   }
 
-  constructor(agentName: string) {
-    this.agentName = agentName;
+  constructor(private _name: string) {
+    this._name = _name;
 
     // Config file is loacted in `./agents/${agentName}/config.json`.
     const configFilePath = path.join(
       Agent.AGENT_FOLDER,
-      agentName,
+      this.name,
       Agent.CONFIG_FILE_NAME,
     );
     if (!fs.existsSync(configFilePath)) {
       throw new Error(
-        `Agent '${agentName}' does not exist. Please create a config file at ${configFilePath}`,
+        `Agent '${this.name}' does not exist. Please create a config file at ${configFilePath}`,
       );
     }
 
@@ -94,6 +93,10 @@ export default class Agent {
     }
   }
 
+  get name() {
+    return this._name;
+  }
+
   chat(userInput: string) {
     return this.bot.chat(userInput);
   }
@@ -127,7 +130,7 @@ export default class Agent {
 
   private saveHistory(history: ChatHistoryType) {
     fs.writeFileSync(
-      path.join(Agent.AGENT_FOLDER, this.agentName, Agent.HISTORY_FILE_NAME),
+      path.join(Agent.AGENT_FOLDER, this.name, Agent.HISTORY_FILE_NAME),
       JSON.stringify(history, null, 2),
     );
   }

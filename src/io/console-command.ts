@@ -1,4 +1,5 @@
 import readline from "node:readline";
+import chalk from "chalk";
 import Agent from "./agent";
 
 export default class ConsoleCommand {
@@ -25,18 +26,25 @@ export default class ConsoleCommand {
       }
 
       if (!this.agent) {
-        console.error("Please load an agent with `/load <agent-name>` first.");
+        console.error(
+          chalk.red(
+            "Please load an agent with " +
+              chalk.redBright("/load <agent-name>") +
+              " first.",
+          ),
+        );
         continue;
       }
 
       try {
         const response = this.agent.chat(inputContent);
+        const printer = new StreamResponsePrinter();
         for await (const chunk of response) {
-          process.stdout.write(chunk);
+          printer.write(chunk);
         }
+        console.log();
 
         this.agent.save();
-        console.log();
       } catch (e) {
         if (e instanceof Error) {
           console.error(e.message);
@@ -51,8 +59,18 @@ export default class ConsoleCommand {
     const commands = command.trim().toLocaleLowerCase().split(" ");
     switch (commands[0]) {
       case "/list":
-        console.log("Available agents:");
-        console.log(Agent.listAgents().join("- "));
+        const currentAgent = this.agent?.name;
+        console.log(chalk.bold("Available agents:"));
+        console.log(
+          Agent.listAgents()
+            .map((agent) =>
+              agent === currentAgent
+                ? chalk.greenBright(agent) + chalk.gray(" (current)")
+                : agent,
+            )
+            .map((agent) => `- ${agent}`)
+            .join("\n"),
+        );
         break;
       case "/load":
         if (commands[1]) {
@@ -65,6 +83,10 @@ export default class ConsoleCommand {
               console.error(e);
             }
           }
+
+          // Print history.
+          this.history();
+          console.log(chalk.gray("(History restored)"));
         } else {
           console.error("Please provide an agent name to load.");
           this.help();
@@ -78,7 +100,13 @@ export default class ConsoleCommand {
         this.exit();
         break;
       default:
-        console.error("Unknown command. Type `/help` for a list of commands.");
+        console.error(
+          chalk.red(
+            "Unknown command. Type " +
+              chalk.bold("/help") +
+              " for a list of commands.",
+          ),
+        );
       case "/help":
       case "/?":
         this.help();
@@ -120,18 +148,37 @@ export default class ConsoleCommand {
     );
     console.log("");
     console.log("Available commands:");
-    console.log("/list - List available agents.");
+    console.log(chalk.bold("/list") + " - List available agents.");
     console.log(
-      "/load <agent-name> - Load an agent. The '<agent-name>' is the folder name under 'agents' folder.",
+      chalk.bold("/load <agent-name>") +
+        " - Load an agent. The '<agent-name>' is the folder name under 'agents' folder.",
     );
-    console.log("/history - Show the history of the current agent.");
-    console.log("/exit or /bye - Exit the program.");
-    console.log("/help or /? - Show this help message.");
+    console.log(
+      chalk.bold("/history") + " - Show the history of the current agent.",
+    );
+    console.log(
+      chalk.bold("/exit") +
+        " or " +
+        chalk.bold("/bye") +
+        " - Exit the program.",
+    );
+    console.log(
+      chalk.bold("/help") +
+        " or " +
+        chalk.bold("/?") +
+        " - Show this help message.",
+    );
   }
 
   private history() {
     if (!this.agent) {
-      console.error("Please load an agent with `/load <agent-name>` first.");
+      console.error(
+        chalk.red(
+          "Please load an agent with " +
+            chalk.bold("/load <agent-name>") +
+            " first.",
+        ),
+      );
       return;
     }
 
@@ -155,5 +202,41 @@ export default class ConsoleCommand {
     }
 
     process.exit();
+  }
+}
+
+class StreamResponsePrinter {
+  private static readonly THINK_TAG_START = "<think>";
+  private static readonly THINK_TAG_END = "</think>";
+
+  /**
+   * Whether the current content is inside a `<think>...</think>` tag.
+   */
+  private isInsideThinkTag = false;
+
+  /**
+   * Final response string.
+   */
+  private _response: string = "";
+
+  write(chunk: string) {
+    if (chunk === StreamResponsePrinter.THINK_TAG_START) {
+      this.isInsideThinkTag = true;
+    }
+
+    if (this.isInsideThinkTag) {
+      process.stdout.write(chalk.gray(chunk));
+    } else {
+      process.stdout.write(chunk);
+      this._response += chunk;
+    }
+
+    if (chunk === StreamResponsePrinter.THINK_TAG_END) {
+      this.isInsideThinkTag = false;
+    }
+  }
+
+  get response(): string {
+    return this._response;
   }
 }
