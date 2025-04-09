@@ -50,7 +50,7 @@ export default class ChatBot {
       messages,
       stream: true,
       temperature: this.temperature,
-      max_tokens: ChatBot.MAX_TOKENS,
+      max_completion_tokens: ChatBot.MAX_TOKENS,
     });
 
     let responseContent = "";
@@ -65,8 +65,11 @@ export default class ChatBot {
     }
 
     responseContent = this.removeThinkTags(responseContent);
-    this.history.push({ role: "user", content: userInput });
-    this.history.push({ role: "assistant", content: responseContent });
+    if (responseContent) {
+      this.history.push({ role: "user", content: userInput });
+      this.history.push({ role: "assistant", content: responseContent });
+    }
+
     return responseContent;
   }
 
@@ -79,6 +82,13 @@ export default class ChatBot {
   }
 
   private removeThinkTags(text: string) {
-    return text.replace(/\<think\>.*?\<\/think\>/s, "").trim();
+    if (text.includes("<think>") && text.includes("</think>")) {
+      return text.replace(/\<think\>.*?\<\/think\>/s, "").trim();
+    } else if (text.includes("<think>")) {
+      // The tag is not closed.
+      return "";
+    } else {
+      return text.trim();
+    }
   }
 }
