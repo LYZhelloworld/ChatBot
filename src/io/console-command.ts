@@ -185,12 +185,10 @@ export default class ConsoleCommand {
     for (const item of this.agent.history()) {
       switch (item.role) {
         case "user":
-          console.log(
-            ">>> " + (item.content as string).split("\n").join("\n... "),
-          );
+          console.log(">>> " + item.content.split("\n").join("\n... "));
           break;
         case "assistant":
-          console.log(item.content as string);
+          console.log(chalk.whiteBright(item.content));
           break;
       }
     }
@@ -227,7 +225,7 @@ class StreamResponsePrinter {
     if (this.isInsideThinkTag) {
       process.stdout.write(chalk.gray(chunk));
     } else {
-      process.stdout.write(chunk);
+      process.stdout.write(chalk.whiteBright(chunk));
       this._response += chunk;
     }
 
