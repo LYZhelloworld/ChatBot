@@ -21,6 +21,10 @@ export default class ConsoleCommand {
   async start() {
     while (true) {
       const inputContent = await this.input();
+      if (inputContent.trim() === "") {
+        continue;
+      }
+
       if (inputContent.startsWith("/")) {
         await this.handleCommands(inputContent);
         continue;
