@@ -28,8 +28,10 @@
     "outputPath": "bin"
   },
   "scripts": {
-    "build": "npm run json-schema && tsc",
-    "dev": "npm run json-schema && ts-node src/index.ts",
+    "prebuild": "npm run json-schema",
+    "build": "tsc",
+    "predev": "npm run json-schema",
+    "dev": "ts-node src/index.ts",
     "start": "node dist/index.js",
     "format": "prettier --write src/**/*.ts",
     "json-schema": "typescript-json-schema src/types/**/*.ts * --required --noExtraProps --out src/validators/schema.json",

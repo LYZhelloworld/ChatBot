@@ -1,6 +1,7 @@
 import readline from "node:readline";
 import chalk from "chalk";
 import Agent from "./agent";
+import { StreamedResponseType } from "../chatbot";
 
 export default class ConsoleCommand {
   private static readonly MULTILINE_TAGS = ["'''", '"""'];
@@ -21,41 +22,46 @@ export default class ConsoleCommand {
     while (true) {
       const inputContent = await this.input();
       if (inputContent.startsWith("/")) {
-        this.handleCommands(inputContent);
+        await this.handleCommands(inputContent);
         continue;
       }
 
       if (!this.agent) {
-        console.error(
-          chalk.red(
-            "Please load an agent with " +
-              chalk.redBright("/load <agent-name>") +
-              " first.",
-          ),
-        );
+        this.logAgentNotLoaded();
         continue;
       }
 
-      try {
-        const response = this.agent.chat(inputContent);
-        const printer = new StreamResponsePrinter();
-        for await (const chunk of response) {
-          printer.write(chunk);
-        }
-        console.log();
+      await this.receiveResponse(this.agent.chat(inputContent));
+    }
+  }
 
-        this.agent.save();
-      } catch (e) {
-        if (e instanceof Error) {
-          console.error(e.message);
-        } else {
-          console.error(e);
-        }
+  private async receiveResponse(response: StreamedResponseType) {
+    try {
+      const printer = new StreamResponsePrinter();
+      for await (const chunk of response) {
+        printer.write(chunk);
+      }
+      console.log();
+    } catch (e) {
+      if (e instanceof Error) {
+        console.error(e.message);
+      } else {
+        console.error(e);
       }
     }
   }
 
-  private handleCommands(command: string) {
+  private logAgentNotLoaded() {
+    console.error(
+      chalk.red(
+        "Please load an agent with " +
+          chalk.bold("/load <agent-name>") +
+          " first.",
+      ),
+    );
+  }
+
+  private async handleCommands(command: string) {
     const commands = command.trim().toLocaleLowerCase().split(" ");
     switch (commands[0]) {
       case "/list":
@@ -94,6 +100,15 @@ export default class ConsoleCommand {
         break;
       case "/history":
         this.history();
+        break;
+      case "/regen":
+      case "/regenerate":
+        if (!this.agent) {
+          this.logAgentNotLoaded();
+          return;
+        }
+
+        await this.receiveResponse(this.agent.regenerate());
         break;
       case "/exit":
       case "/bye":
@@ -157,6 +172,12 @@ export default class ConsoleCommand {
       chalk.bold("/history") + " - Show the history of the current agent.",
     );
     console.log(
+      chalk.bold("/regen") +
+        " or " +
+        chalk.bold("/regenerate") +
+        " - Regenerate the last response.",
+    );
+    console.log(
       chalk.bold("/exit") +
         " or " +
         chalk.bold("/bye") +
@@ -172,13 +193,7 @@ export default class ConsoleCommand {
 
   private history() {
     if (!this.agent) {
-      console.error(
-        chalk.red(
-          "Please load an agent with " +
-            chalk.bold("/load <agent-name>") +
-            " first.",
-        ),
-      );
+      this.logAgentNotLoaded();
       return;
     }
 
