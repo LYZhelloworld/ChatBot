@@ -6,6 +6,8 @@ type ChatHistoryTypeWithSystem = {
   content: string;
 }[];
 
+export type StreamedResponseType = AsyncGenerator<string, void, unknown>;
+
 export default class ChatBot {
   private client: OpenAI;
   private systemPrompt: string;
@@ -72,8 +74,21 @@ export default class ChatBot {
       this.history.push({ role: "user", content: userInput });
       this.history.push({ role: "assistant", content: responseContent });
     }
+  }
 
-    return responseContent;
+  /**
+   * Regenerate the last response.
+   */
+  regenerate(): StreamedResponseType {
+    if (this.history.length < 2) {
+      return (async function* (): StreamedResponseType {
+        return;
+      })();
+    }
+    const lastUserMessage = this.history[this.history.length - 2].content;
+
+    this.history = this.history.slice(0, -2);
+    return this.chat(lastUserMessage);
   }
 
   dumpChatHistory(): ChatHistoryType {

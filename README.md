@@ -55,6 +55,7 @@ Available commands:
 - `/list` - List available agents.
 - `/load <agent-name>` - Load an agent. The `<agent-name>` is the folder name under `agents` folder.
 - `/history` - Show the history of the current agent.
+- `/regen` or `/regenerate` - Regenerate the last response.
 - `/exit` or `/bye` - Exit the program.
 - `/help` or `/?` - Show this help message.
 

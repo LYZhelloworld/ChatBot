@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import ChatBot from "../chatbot/chatbot";
+import ChatBot, { StreamedResponseType } from "../chatbot/chatbot";
 import { AgentConfigType, ChatHistoryType } from "../types";
 import { validateAgentConfig, validateChatHistory } from "../validators";
 
@@ -97,12 +97,24 @@ export default class Agent {
     return this._name;
   }
 
-  chat(userInput: string) {
-    return this.bot.chat(userInput);
+  async *chat(userInput: string): StreamedResponseType {
+    for await (const chunk of this.bot.chat(userInput)) {
+      yield chunk;
+    }
+
+    this.save();
   }
 
   history() {
     return this.bot.dumpChatHistory();
+  }
+
+  async *regenerate(): StreamedResponseType {
+    for await (const chunk of this.bot.regenerate()) {
+      yield chunk;
+    }
+
+    this.save();
   }
 
   save() {
