@@ -1,6 +1,5 @@
 import os
 import json
-from pathlib import Path
 import sys
 
 from chatbot.types import ChatHistory, StreamedResponse
