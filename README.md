@@ -8,8 +8,10 @@ Please install [Ollama](https://ollama.com) If you want to run locally. Otherwis
 
 ### Environment Setup
 ```powershell
-# Enter virtual environment
-./venv/Scripts/activate
+# Activate virtual environment
+python -m venv .venv
+./.venv/Scripts/activate
+
 # Install dependencies
 pip install -r requirements.txt
 ```
@@ -34,9 +36,16 @@ pip install -r requirements.txt
 1. Create a file `system.md` in the directory with any system prompts.
 
 ## How to Use
+Run with Python environment:
 ```powershell
 python src/main.py
 ```
+
+Build an executable file:
+```powershell
+pyinstaller src/main.py --onefile --console --distpath dist --name "ChatBot" -y src/main.py
+```
+The executable file will be generated in the `dist` folder.
 
 ### Commands
 Available commands:
