@@ -1,39 +1,41 @@
 # ChatBot
-ChatBot is an interactive chatting tool with local deployed LLM.
+[简体中文](./README.md) | [English](./README_en.md)
 
-## Prerequisites
-This tool is based on OpenAI API model.
+ChatBot 是一个基于本地部署 LLM 的交互式聊天工具。
 
-Please install [Ollama](https://ollama.com) If you want to run locally. Otherwise, please provide an API token in the configuration file.
+## 前置条件
+此工具基于 OpenAI API 模型。
 
-### Environment Setup
-Please make sure you have Python 3.10 or higher installed. Recommended version is 3.13.
+如果希望本地运行，请安装 [Ollama](https://ollama.com)，否则请在配置文件中提供 API 密钥。
 
-Install [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer).
+### 环境设置
+请确保已安装 Python 3.10 或更高版本。推荐版本为 3.13。
+
+安装 [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer)。
 
 ```powershell
 (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
 
-# Check if Poetry is installed successfully
+# 检查 Poetry 是否安装成功
 poetry --version
 ```
 
-Activate the virtual environment and install dependencies. See: [Managing environments](https://python-poetry.org/docs/managing-environments/#powershell).
+激活虚拟环境并安装依赖项。参见：[Managing environments](https://python-poetry.org/docs/managing-environments/#powershell)。
 
 ```powershell
-# Activate virtual environment
+# 激活虚拟环境
 python -m venv .venv
 Invoke-Expression (poetry env activate)
 
-# Install dependencies
+# 安装依赖项
 poetry install
 ```
 
-### Create Agent
-1. Create a folder `agents` under the `src` folder (if it does not exist).
-    - If you are running the executable file, create the folder `agents` under the same directory as the executable file.
-1. Create a folder under `agents` with a proper name **without spaces**. (For example, `my-agent`).
-1. Add a configuration file in your agent folder with the name `config.json`. Below is an example:
+### 创建 Agent
+1. 在 `src` 文件夹下创建一个名为 `agents` 的文件夹（如果不存在的话）。
+    - 如果运行的是可执行文件，请在可执行文件所在目录下创建 `agents` 文件夹。
+1. 在 `agents` 文件夹下创建一个文件夹，注意文件夹的名字**不能有空格**。（例如：`my-agent`）。
+1. 在该文件夹中添加一个名为 `config.json` 的配置文件。例如：
     ```json
     {
       "model": "qwen2.5-7b",
@@ -46,61 +48,64 @@ poetry install
       "temperature": 0.7
     }
     ```
-1. Create a file `system.md` in the directory with any system prompts.
+1. 在该目录下创建一个名为 `system.md` 的文件，用于存放系统提示词。
 
-## How to Use
-Run with Python environment:
+## 使用方法
+在 Python 环境中运行：
+
 ```powershell
 python src/main.py
 ```
 
-Build an executable file:
+构建可执行文件：
+
 ```powershell
 pyinstaller --onefile --console --distpath dist --name "ChatBot" -y src/main.py
 ```
-The executable file will be generated in the `dist` folder.
 
-### Commands
-Available commands:
-- `/list` - List available agents.
-- `/load <agent-name>` - Load an agent. The `<agent-name>` is the folder name under `agents` folder.
-- `/history` - Show the history of the current agent.
-- `/regen` or `/regenerate` - Regenerate the last response.
-- `/exit` or `/bye` - Exit the program.
-- `/help` or `/?` - Show this help message.
+可执行文件将生成在 `dist` 文件夹中。
 
-### Chat
-Type the message you want to send to the agent. **You need to use `/load` to load an agent first before sending.**
+### 命令
+可用命令：
+- `/list` - 列出可用的 agents。
+- `/load <agent-name>` - 加载一个 agent。`<agent-name>` 是 `agents` 文件夹下的文件夹名称。
+- `/history` - 显示当前 agent 的历史记录。
+- `/regen` 或 `/regenerate` - 重新生成上一次的回复。
+- `/exit` 或 `/bye` - 退出程序。
+- `/help` 或 `/?` - 显示帮助信息。
 
-If you want to send a multi-line message, use triple single quotes (''') or triple double quotes (""") to start and end the message. For example:
+### 聊天
+输入您想发送给 agent 的消息。**在发送消息之前，您需要使用 `/load` 加载一个 agent。**
+
+如果您想发送多行消息，请使用三个单引号（`'''`）或三个双引号（`"""`）来开始和结束消息。例如：
 
 ```
 '''
-First line
-Second line
-Third line
+第一行
+第二行
+第三行
 '''
 ```
 
-Or
+或者
 
 ```
 """
-First line
-Second line
-Third line
+第一行
+第二行
+第三行
 """
 ```
 
-### Chat History
-Chat history is autosaved under the agent folder with the name `history.json`.
+### 聊天记录
+聊天记录会自动保存在 agent 文件夹下，文件名为 `history.json`。
 
-## Agent File Schema
-- `model`: The model used by the agent.
-- `baseURL`: The URL of the LLM server API.
-- `apiKey`: The API key used by the LLM server. Please provide an arbitrary API key if your server is hosted locally.
-- `systemPrompt`: (Optional) The system prompt to be used by the agent. It can be either a file or a text string.
-    - If the `type` is `"file"`, please provide a `path` to the prompt file. The path is relative to the directory of the `config.json` file.
+## Agent 文件结构
+- `model`: agent 使用的模型。
+- `baseURL`: LLM 服务器 API 的 URL。
+- `apiKey`: LLM 服务器使用的 API 密钥。如果服务器是本地托管的，请提供任意 API 密钥。
+- `systemPrompt`: （可选）agent 使用的系统提示词。可以是文件或文本字符串。
+    - 如果 `type` 是 `"file"`，请提供提示文件的 `path`。路径是相对于 `config.json` 文件的目录。
         ```json
         {
           "systemPrompt": {
@@ -109,13 +114,13 @@ Chat history is autosaved under the agent folder with the name `history.json`.
           }
         }
         ```
-    - If the `type` is `text`, please provide the prompt directly in the `content` field.
+    - 如果 `type` 是 `"text"`，请直接在 `content` 字段中提供提示词。
         ```json
         {
           "systemPrompt": {
             "type": "text",
-            "content": "You are an assistant that answers user's questions."
+            "content": "你是一个 AI 助手，用于回答用户问题。"
           }
         }
         ```
-- `temperature`: (Optional) The temperature used by the model. Default value is `0.7`.
+- `temperature`: （可选）模型使用的温度值。默认值为 `0.7`。
