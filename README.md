@@ -43,7 +43,7 @@ python src/main.py
 
 Build an executable file:
 ```powershell
-pyinstaller src/main.py --onefile --console --distpath dist --name "ChatBot" -y src/main.py
+pyinstaller --onefile --console --distpath dist --name "ChatBot" -y src/main.py
 ```
 The executable file will be generated in the `dist` folder.
 
