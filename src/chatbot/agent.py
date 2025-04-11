@@ -1,16 +1,47 @@
+from functools import reduce
 import os
 import json
 import sys
+import traceback
 
 from openai import OpenAI, Stream
 from openai.types.chat import ChatCompletionChunk
 
-from chatbot.types import ChatHistory, StreamedResponse
+from chatbot.types import ChatHistoryV0Item, StreamedResponse
 from utils.utils import remove_think_tags
-from .types import AgentConfig, SystemPrompt
+from .types import AgentConfig, ChatHistoryV1, SystemPrompt
 from .validators.validator import validate
 from .validators.agent_config import schema as agent_config_schema
-from .validators.chat_history import schema as chat_history_schema
+from .validators.chat_history import schema_v0 as chat_history_schema_v0
+
+
+def chat_history_converter(historyV0: list[ChatHistoryV0Item]) -> ChatHistoryV1:
+    """
+    Converts a list of ChatHistoryV0Item to ChatHistoryV1 format.
+
+    :param historyV0: The chat history in V0 format.
+    :return: The chat history in V1 format.
+    :rtype: ChatHistoryV1
+    """
+    iterator = iter(historyV0)
+    result: ChatHistoryV1 = {
+        "version": "v1",
+        "history": [],
+    }
+
+    try:
+        while True:
+            user = next(iterator)
+            assistant = next(iterator)
+            result["history"].append({
+                "user_message": user["content"],
+                "assistant_message": assistant["content"],
+                "emotion": 50,
+            })
+    except StopIteration:
+        pass
+
+    return result
 
 
 class Agent:
@@ -40,7 +71,7 @@ class Agent:
         self.__temperature: float = config_file_content.get("temperature", 0.7)
         self.__history_limit: int = config_file_content.get("historyLimit", 20)
         self.__max_tokens: int = config_file_content.get("maxTokens", 2048)
-        self.__history: list[ChatHistory] = []
+        self.__history: ChatHistoryV1 = {"version": "v1", "history": []}
 
         self.__client: OpenAI = OpenAI(
             api_key=config_file_content.get("apiKey"),
@@ -53,10 +84,7 @@ class Agent:
             self.save()
         else:
             try:
-                with open(history_file_path, "r", encoding="utf-8") as file:
-                    history_content: list[ChatHistory] = validate(
-                        json.load(file), chat_history_schema)
-                self.__load_history(history_content)
+                self.__load_history(history_file_path)
             except Exception as e:
                 print(f"Warning: {str(e)}")
                 print("Cannot load history file. History will be empty.")
@@ -89,7 +117,7 @@ class Agent:
             yield chunk
         self.save()
 
-    def history(self) -> list[ChatHistory]:
+    def history(self) -> ChatHistoryV1:
         return self.__history
 
     def regenerate(self) -> StreamedResponse:
@@ -100,12 +128,12 @@ class Agent:
         :rtype: StreamedResponse
         """
 
-        if len(self.__history) < 2:
+        if len(self.__history["history"]) == 0:
             return (_ for _ in [])  # Empty generator
 
-        last_user_message = self.__history[-2]["content"]
+        last_user_message = self.__history["history"][-1]["content"]
 
-        self.__history = self.__history[:-2]
+        self.__history["history"] = self.__history["history"][:-1]
 
         for chunk in self.__chat(last_user_message):
             yield chunk
@@ -130,17 +158,40 @@ class Agent:
 
         return ""
 
-    def __load_history(self, history: list[ChatHistory]):
+    def __load_history(self, path: str):
         """
         Loads a given chat history into the chatbot.
 
-        :param list[ChatHistory] history: The chat history to load, as a list of messages with a role ("user" or "assistant") and content.
+        :param str path: The path to the chat history file.
         """
-        self.__history = history
+        try:
+            with open(path, "r", encoding="utf-8") as file:
+                file_content = json.load(file)
+            try:
+                self.__history = chat_history_converter(
+                    validate(file_content, chat_history_schema_v0))
+                self.save()
+            except ValueError:
+                self.__history = validate(
+                    file_content, chat_history_schema_v0)
+        except Exception as e:
+            print(f"Warning: {str(e)}\n{traceback.format_exc()}")
+            print("Cannot load history file. History will be empty.")
 
     def __chat(self, user_input: str) -> StreamedResponse:
+        converted_history = []
+        for item in self.__history["history"][-self.__history_limit:]:
+            converted_history.append({
+                "role": "user",
+                "content": item["user_message"],
+            })
+            converted_history.append({
+                "role": "assistant",
+                "content": item["assistant_message"],
+            })
+
         messages = [{"role": "system", "content": self.__system_prompt}] + \
-            self.__history[-self.__history_limit:] + \
+            converted_history + \
             [{"role": "user", "content": user_input}]
 
         response: Stream[ChatCompletionChunk] = self.__client.chat.completions.create(
@@ -162,6 +213,8 @@ class Agent:
 
         response_content = remove_think_tags(response_content)
         if response_content:
-            self.__history.append({"role": "user", "content": user_input})
-            self.__history.append(
-                {"role": "assistant", "content": response_content})
+            self.__history["history"].append({
+                "user_message": user_input,
+                "assistant_message": response_content,
+                "emotion": 50,
+            })

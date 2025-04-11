@@ -1,7 +1,7 @@
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 
-from chatbot.types import ChatHistoryItem
+from chatbot.types import ChatHistoryV1Item
 from .prompts import system_prompt, chat_history_item
 
 
@@ -35,7 +35,7 @@ class Emotion:
             base_url=base_url
         )
 
-    def get(self, history: list[ChatHistoryItem], user: str, assistant: str) -> int:
+    def get(self, history: list[ChatHistoryV1Item], user: str, assistant: str) -> int:
         """
         Returns the current emotion value based on the history.
 

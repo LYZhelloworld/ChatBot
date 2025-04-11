@@ -1,15 +1,20 @@
 from typing import Generator, Literal, TypedDict, Union
 
 
-class ChatHistory(TypedDict):
+class ChatHistoryV0Item(TypedDict):
     role: Literal["user", "assistant"]
     content: str
 
 
-class ChatHistoryItem(TypedDict):
+class ChatHistoryV1Item(TypedDict):
     user_message: str
     assistant_message: str
     emotion: int
+
+
+class ChatHistoryV1(TypedDict):
+    version: Literal["v1"]
+    history: list[ChatHistoryV1Item]
 
 
 type StreamedResponse = Generator[str, None, None]

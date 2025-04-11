@@ -134,13 +134,10 @@ class ConsoleCommand:
             self.__log_agent_not_loaded()
             return
 
-        for item in self.__agent.history():
-            match item["role"]:
-                case "user":
-                    print(">>> " + item["content"].replace("\n", "\n... "))
-                case "assistant":
-                    print(colorama.Style.BRIGHT +
-                          item["content"] + colorama.Style.RESET_ALL)
+        for item in self.__agent.history()["history"]:
+            print(">>> " + item["user_message"].replace("\n", "\n... "))
+            print(colorama.Style.BRIGHT +
+                  item["assistant_message"] + colorama.Style.RESET_ALL)
 
     def exit(self):
         if self.__agent:
