@@ -14,7 +14,7 @@ Please make sure you have Python 3.10 or higher installed. Recommended version i
 Install [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer).
 
 ```powershell
-(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
 
 # Check if Poetry is installed successfully
 poetry --version
