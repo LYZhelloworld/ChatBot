@@ -7,23 +7,25 @@ This tool is based on OpenAI API model.
 Please install [Ollama](https://ollama.com) If you want to run locally. Otherwise, please provide an API token in the configuration file.
 
 ### Environment Setup
-```bash
-npm install
+```powershell
+# Enter virtual environment
+./venv/Scripts/activate
+# Install dependencies
+pip install -r requirements.txt
 ```
 
 ### Create Agent
-1. Create a folder `agents` under the root directory of this project (if it does not exist).
+1. Create a folder `agents` under the `src` folder (if it does not exist).
     - If you are running the executable file, create the folder `agents` under the same directory as the executable file.
 1. Create a folder under `agents` with a proper name **without spaces**. (For example, `my-agent`).
 1. Add a configuration file in your agent folder with the name `config.json`. Below is an example:
     ```json
     {
-      "name": "my-agent",
       "model": "qwen2.5-7b",
       "baseURL": "http://localhost:11434/v1",
       "apiKey": "ollama",
       "systemPrompt": {
-          "type": "file",
+        "type": "file",
         "path": "system.md"
       },
       "temperature": 0.7
@@ -32,23 +34,9 @@ npm install
 1. Create a file `system.md` in the directory with any system prompts.
 
 ## How to Use
-You can either run without building:
-
-```bash
-npm run dev
+```powershell
+python src/main.py
 ```
-
-Or run after building:
-```bash
-npm run build
-npm start
-```
-
-Alternatively, you can build the executable file and run it directly:
-```bash
-npm run release
-```
-The executable file will be generated in the `bin` folder.
 
 ### Commands
 Available commands:
@@ -86,7 +74,6 @@ Third line
 Chat history is autosaved under the agent folder with the name `history.json`.
 
 ## Agent File Schema
-- `name`: The name of the agent.
 - `model`: The model used by the agent.
 - `baseURL`: The URL of the LLM server API.
 - `apiKey`: The API key used by the LLM server. Please provide an arbitrary API key if your server is hosted locally.
