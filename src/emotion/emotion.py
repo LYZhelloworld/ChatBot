@@ -2,7 +2,7 @@ from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 
 from chatbot.types import ChatHistoryItem
-import prompts.emotion as prompts
+from .prompts import system_prompt, chat_history_item
 
 
 class Emotion:
@@ -34,7 +34,7 @@ class Emotion:
             api_key=api_key,
             base_url=base_url
         )
-    
+
     def get(self, history: list[ChatHistoryItem], user: str, assistant: str) -> int:
         """
         Returns the current emotion value based on the history.
@@ -51,17 +51,18 @@ class Emotion:
 
         if len(history) == 0:
             return Emotion.__EMOTION_DEFAULT
-        
+
         messages: list[ChatCompletionMessageParam] = []
-        messages.append({"role": "system", "content": prompts.system_prompt})
+        messages.append({"role": "system", "content": system_prompt})
         for item in history:
-            messages.append({"role": "user", "content": prompts.chat_history_item.format(
+            messages.append({"role": "user", "content": chat_history_item.format(
                 user_message=item["user_message"],
                 assistant_message=item["assistant_message"],
             )})
-            messages.append({"role": "assistant", "content": str(item["emotion"])})
-        
-        messages.append({"role": "user", "content": prompts.chat_history_item.format(
+            messages.append(
+                {"role": "assistant", "content": str(item["emotion"])})
+
+        messages.append({"role": "user", "content": chat_history_item.format(
             user_message=user,
             assistant_message=assistant,
         )})
@@ -77,6 +78,7 @@ class Emotion:
         try:
             emotion = int(response.choices[0].message.content.strip())
         except ValueError:
-            emotion = history[-1]["emotion"] if len(history) > 0 else Emotion.__EMOTION_DEFAULT
-        
+            emotion = history[-1]["emotion"] if len(
+                history) > 0 else Emotion.__EMOTION_DEFAULT
+
         return max(Emotion.__EMOTION_MIN, min(Emotion.__EMOTION_MAX, emotion))
