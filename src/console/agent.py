@@ -38,6 +38,8 @@ class Agent:
             system_prompt=self.get_system_prompt(
                 config_file_content.get("systemPrompt")),
             temperature=config_file_content.get("temperature"),
+            history_limit=config_file_content.get("historyLimit"),
+            max_tokens=config_file_content.get("maxTokens"),
         )
 
         history_file_path = os.path.join(os.path.dirname(
