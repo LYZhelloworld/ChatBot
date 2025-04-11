@@ -7,6 +7,8 @@ This tool is based on OpenAI API model.
 Please install [Ollama](https://ollama.com) If you want to run locally. Otherwise, please provide an API token in the configuration file.
 
 ### Environment Setup
+Please make sure you have Python 3.10 or higher installed. Recommended version is 3.13.
+
 ```powershell
 # Activate virtual environment
 python -m venv .venv

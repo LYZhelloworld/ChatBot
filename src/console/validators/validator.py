@@ -5,7 +5,7 @@ import jsonschema
 T = TypeVar('T')
 
 
-def validate[T](config: Any, schema: Any, clazz: type[T]) -> T:
+def validate[T](config: Any, schema: Any) -> T:
     """
     Validates the given configuration against the schema.
 

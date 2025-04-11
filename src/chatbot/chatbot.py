@@ -98,20 +98,20 @@ class ChatBot:
         self.__history = self.__history[:-2]
         return self.chat(last_user_message)
 
-    def dump_chat_history(self) -> ChatHistory:
+    def dump_chat_history(self) -> list[ChatHistory]:
         """
         Returns the current chat history.
 
         :return: The chat history as a list of messages, where each message contains a role ("user" or "assistant") and content.
-        :rtype: ChatHistory
+        :rtype: list[ChatHistory]
         """
         return self.__history
 
-    def load_chat_history(self, history: ChatHistory):
+    def load_chat_history(self, history: list[ChatHistory]):
         """
         Loads a given chat history into the chatbot.
 
-        :param ChatHistory history: The chat history to load, as a list of messages with a role ("user" or "assistant") and content.
+        :param list[ChatHistory] history: The chat history to load, as a list of messages with a role ("user" or "assistant") and content.
         """
         self.__history = history
 

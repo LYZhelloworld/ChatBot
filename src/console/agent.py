@@ -28,8 +28,8 @@ class Agent:
             )
 
         with open(config_file_path, "r", encoding="utf-8") as file:
-            config_file_content = validate(
-                json.load(file), agent_config_schema, AgentConfig)
+            config_file_content: AgentConfig = validate(
+                json.load(file), agent_config_schema)
 
         self.__bot: ChatBot = ChatBot(
             model=config_file_content.get("model"),
@@ -47,8 +47,8 @@ class Agent:
         else:
             try:
                 with open(history_file_path, "r", encoding="utf-8") as file:
-                    history_content = validate(
-                        json.load(file), chat_history_schema, ChatHistory)
+                    history_content: list[ChatHistory] = validate(
+                        json.load(file), chat_history_schema)
                 self.__bot.load_chat_history(history_content)
             except Exception as e:
                 print(f"Warning: {str(e)}")
