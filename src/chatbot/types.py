@@ -6,6 +6,12 @@ class ChatHistory(TypedDict):
     content: str
 
 
+class ChatHistoryItem(TypedDict):
+    user_message: str
+    assistant_message: str
+    emotion: int
+
+
 type StreamedResponse = Generator[str, None, None]
 
 __all__ = ["ChatHistory", "StreamedResponse"]
