@@ -9,13 +9,24 @@ Please install [Ollama](https://ollama.com) If you want to run locally. Otherwis
 ### Environment Setup
 Please make sure you have Python 3.10 or higher installed. Recommended version is 3.13.
 
+Install [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer).
+
+```powershell
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+
+# Check if Poetry is installed successfully
+poetry --version
+```
+
+Activate the virtual environment and install dependencies. See: [Managing environments](https://python-poetry.org/docs/managing-environments/#powershell).
+
 ```powershell
 # Activate virtual environment
 python -m venv .venv
-./.venv/Scripts/activate
+Invoke-Expression (poetry env activate)
 
 # Install dependencies
-pip install -r requirements.txt
+poetry install
 ```
 
 ### Create Agent
