@@ -14,10 +14,10 @@ class ChatBot:
                  model: str,
                  base_url: str,
                  api_key: str,
-                 system_prompt: str = "",
-                 temperature: float = 0.7,
-                 history_limit: int = 20,
-                 max_tokens: int = 2048):
+                 system_prompt: str | None = None,
+                 temperature: float | None = None,
+                 history_limit: int | None = None,
+                 max_tokens: int | None = None):
         """
         Initializes the ChatBot instance.
 
@@ -29,6 +29,11 @@ class ChatBot:
         :param int history_limit: The maximum number of messages to keep in history.
         :param int max_tokens: The maximum number of tokens for the response.
         """
+
+        system_prompt = "" if system_prompt is None else system_prompt
+        temperature = 0.7 if temperature is None else temperature
+        history_limit = 20 if history_limit is None else history_limit
+        max_tokens = 2048 if max_tokens is None else max_tokens
 
         self.__model: str = model
         self.__client: OpenAI = OpenAI(
@@ -53,10 +58,6 @@ class ChatBot:
         messages = [{"role": "system", "content": self.__system_prompt}] + \
             self.__history[-self.__history_limit:] + \
             [{"role": "user", "content": user_input}]
-
-        self.__history.append({"role": "user", "content": user_input})
-        if len(self.__history) > self.__history_limit:
-            self.__history.pop(0)
 
         response: Stream[ChatCompletionChunk] = self.__client.chat.completions.create(
             model=self.__model,

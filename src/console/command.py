@@ -159,15 +159,15 @@ class StreamResponsePrinter:
     def write(self, chunk: str):
         if chunk == self.__THINK_TAG_START:
             self.__is_inside_think_tag = True
-            print(colorama.Style.DIM, end="")
+            print(colorama.Style.DIM, end="", flush=True)
 
-        print(chunk, end="")
+        print(chunk, end="", flush=True)
         if not self.__is_inside_think_tag:
             self.__response += chunk
 
         if chunk == self.__THINK_TAG_END:
             self.__is_inside_think_tag = False
-            print(colorama.Style.BRIGHT, end="")
+            print(colorama.Style.NORMAL, end="", flush=True)
 
     @property
     def response(self) -> str:

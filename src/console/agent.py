@@ -33,12 +33,12 @@ class Agent:
                 json.load(file), agent_config_schema, AgentConfig)
 
         self.__bot: ChatBot = ChatBot(
-            model=config_file_content["model"],
-            base_url=config_file_content["baseURL"],
-            api_key=config_file_content["apiKey"],
+            model=config_file_content.get("model"),
+            base_url=config_file_content.get("baseURL"),
+            api_key=config_file_content.get("apiKey"),
             system_prompt=self.get_system_prompt(
-                config_file_content["systemPrompt"]),
-            temperature=config_file_content["temperature"],
+                config_file_content.get("systemPrompt")),
+            temperature=config_file_content.get("temperature"),
         )
 
         history_file_path = os.path.join(os.path.dirname(
