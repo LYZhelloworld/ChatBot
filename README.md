@@ -14,7 +14,7 @@ ChatBot 是一个基于本地部署 LLM 的交互式聊天工具。
 安装 [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer)。
 
 ```powershell
-(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
 
 # 检查 Poetry 是否安装成功
 poetry --version
