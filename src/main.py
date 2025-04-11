@@ -1,4 +1,4 @@
-from console.command import ConsoleCommand
+from chatbot.command import ConsoleCommand
 
 
 def main():
