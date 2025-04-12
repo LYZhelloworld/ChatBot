@@ -57,6 +57,12 @@ Run with Python environment:
 python src/main.py
 ```
 
+If you want to load an agent at startup, you can pass the agent name as an argument:
+
+```powershell
+python src/main.py my-agent
+```
+
 Build an executable file:
 
 ```powershell
@@ -98,7 +104,7 @@ Third line
 ```
 
 ### Chat History
-Chat history is autosaved under the agent folder with the name `history.json`.
+Chat history is autosaved under the `agent` folder with the name `history.json`.
 
 ## Agent File Schema
 - `model`: The model used by the agent.
