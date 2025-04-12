@@ -13,9 +13,9 @@ class ConsoleCommand:
 
     def __init__(self):
         self.__agent: Agent | None = None
+        colorama.init()
 
     def start(self):
-        colorama.init()
         while True:
             input_content = self.input()
             if input_content.strip() == "":
@@ -62,15 +62,7 @@ class ConsoleCommand:
                 )
             case "/load":
                 if len(commands) > 1:
-                    try:
-                        self.__agent = Agent(commands[1])
-                    except Exception as e:
-                        print(
-                            f"Error: {e}\n{traceback.format_exc()}", file=sys.stderr)
-                    else:
-                        self.history()
-                        print(colorama.Style.DIM +
-                              "(History restored)" + colorama.Style.RESET_ALL)
+                    self.load_agent(commands[1])
                 else:
                     print("Please provide an agent name to load.")
                     self.help()
@@ -90,6 +82,15 @@ class ConsoleCommand:
                 print(colorama.Fore.RED + "Unknown command. Type " + colorama.Style.BRIGHT +
                       "/help" + colorama.Style.NORMAL + " for a list of commands." + colorama.Style.RESET_ALL)
                 self.help()
+
+    def load_agent(self, agent_name: str):
+        try:
+            self.__agent = Agent(agent_name)
+            self.history()
+            print(colorama.Style.DIM +
+                  "(History restored)" + colorama.Style.RESET_ALL)
+        except Exception as e:
+            print(f"Error: {e}\n{traceback.format_exc()}", file=sys.stderr)
 
     def input(self) -> str:
         """

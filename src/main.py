@@ -1,10 +1,16 @@
+import sys
 from chatbot.command import ConsoleCommand
 
 
-def main():
+def main(agent_name: str = None):
     command = ConsoleCommand()
+    if agent_name:
+        command.load_agent(agent_name)
     command.start()
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1:
+        main(sys.argv[1])
+    else:
+        main()
