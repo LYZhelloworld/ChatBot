@@ -15,5 +15,7 @@ system_prompt = """
 
 以下是你所扮演的角色的信息：
 
-{user_character_description}
+{user_system_prompt}
+
+当前好感度：{emotion_value}
 """

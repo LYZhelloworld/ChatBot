@@ -2,6 +2,7 @@ from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 
 from chatbot.types import ChatHistoryV1Item
+from utils.utils import remove_think_tags
 from .prompts import system_prompt, chat_history_item
 
 
@@ -76,7 +77,8 @@ class Emotion:
         )
 
         try:
-            emotion = int(response.choices[0].message.content.strip())
+            emotion = int(remove_think_tags(
+                response.choices[0].message.content.strip()))
         except ValueError:
             emotion = history[-1]["emotion"] if len(
                 history) > 0 else Emotion.__EMOTION_DEFAULT

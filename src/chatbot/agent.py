@@ -8,11 +8,13 @@ from openai import OpenAI, Stream
 from openai.types.chat import ChatCompletionChunk
 
 from chatbot.types import ChatHistoryV0Item, StreamedResponse
+from emotion.emotion import Emotion
 from utils.utils import remove_think_tags
 from .types import AgentConfig, ChatHistoryV1, SystemPrompt
 from .validators.validator import validate
 from .validators.agent_config import schema as agent_config_schema
-from .validators.chat_history import schema_v0 as chat_history_schema_v0
+from .validators.chat_history import schema_v0 as chat_history_schema_v0, schema_v1 as chat_history_schema_v1
+from .prompts import system_prompt
 
 
 def chat_history_converter(historyV0: list[ChatHistoryV0Item]) -> ChatHistoryV1:
@@ -36,7 +38,7 @@ def chat_history_converter(historyV0: list[ChatHistoryV0Item]) -> ChatHistoryV1:
             result["history"].append({
                 "user_message": user["content"],
                 "assistant_message": assistant["content"],
-                "emotion": 50,
+                "emotion": Agent.__DEFAULT_EMOTION,
             })
     except StopIteration:
         pass
@@ -49,6 +51,7 @@ class Agent:
     __AGENT_FOLDER = os.path.join(__BASE_PATH, "agents")
     __CONFIG_FILE_NAME = "config.json"
     __HISTORY_FILE_NAME = "history.json"
+    __DEFAULT_EMOTION = 50
 
     def __init__(self, name: str):
         self.__name: str = name
@@ -65,19 +68,33 @@ class Agent:
             config_file_content: AgentConfig = validate(
                 json.load(file), agent_config_schema)
 
+        # Load agent configuration from config file.
         self.__model: str = config_file_content.get("model")
-        self.__system_prompt: str = self.__get_system_prompt(
-            config_file_content.get("systemPrompt")).strip()
         self.__temperature: float = config_file_content.get("temperature", 0.7)
         self.__history_limit: int = config_file_content.get("historyLimit", 20)
         self.__max_tokens: int = config_file_content.get("maxTokens", 2048)
         self.__history: ChatHistoryV1 = {"version": "v1", "history": []}
 
+        # Load user system prompt from config file.
+        self.__user_system_prompt: str
+        system_prompt_config = config_file_content.get("systemPrompt")
+        if system_prompt_config is None:
+            self.__user_system_prompt = ""
+        elif system_prompt_config["type"] == "text":
+            self.__user_system_prompt = system_prompt_config["content"].strip()
+        elif system_prompt_config["type"] == "file":
+            with open(os.path.join(Agent.__AGENT_FOLDER, self.name, system_prompt_config["path"]), "r", encoding="utf-8") as file:
+                self.__user_system_prompt = file.read().strip()
+        else:
+            self.__user_system_prompt = ""
+
+        # Create OpenAI client with the provided API key and base URL.
         self.__client: OpenAI = OpenAI(
             api_key=config_file_content.get("apiKey"),
             base_url=config_file_content.get("baseURL"),
         )
 
+        # Load or create history file.
         history_file_path = os.path.join(os.path.dirname(
             config_file_path), Agent.__HISTORY_FILE_NAME)
         if not os.path.exists(history_file_path):
@@ -88,6 +105,10 @@ class Agent:
             except Exception as e:
                 print(f"Warning: {str(e)}")
                 print("Cannot load history file. History will be empty.")
+
+        # Create emotion instance.
+        self.__emotion: Emotion = Emotion(
+            self.__model, self.__client.base_url, config_file_content.get("apiKey"))
 
     @property
     def name(self) -> str:
@@ -145,18 +166,24 @@ class Agent:
         with open(history_file_path, "w", encoding="utf-8") as file:
             json.dump(self.__history, file, indent=2, ensure_ascii=False)
 
-    def __get_system_prompt(self, system_prompt: SystemPrompt) -> str:
-        if system_prompt is None:
-            return ""
+    def __get_system_prompt(self) -> str:
+        """
+        Generates system prompt based on the user system prompt and the current emotion value.
+        :return: The system prompt string.
+        :rtype: str
+        """
 
-        if system_prompt["type"] == "text":
-            return system_prompt["content"]
+        if len(self.__history["history"]) > 0:
+            # Get the last emotion value from the history.
+            emotion = self.__history["history"][-1]["emotion"]
+        else:
+            # If no history, use the default emotion value.
+            emotion = Agent.__DEFAULT_EMOTION
 
-        if system_prompt["type"] == "file":
-            with open(os.path.join(Agent.__AGENT_FOLDER, self.name, system_prompt["path"]), "r", encoding="utf-8") as file:
-                return file.read()
-
-        return ""
+        return system_prompt.format(
+            user_system_prompt=self.__user_system_prompt,
+            emotion_value=emotion,
+        )
 
     def __load_history(self, path: str):
         """
@@ -173,7 +200,7 @@ class Agent:
                 self.save()
             except ValueError:
                 self.__history = validate(
-                    file_content, chat_history_schema_v0)
+                    file_content, chat_history_schema_v1)
         except Exception as e:
             print(f"Warning: {str(e)}\n{traceback.format_exc()}")
             print("Cannot load history file. History will be empty.")
@@ -190,7 +217,7 @@ class Agent:
                 "content": item["assistant_message"],
             })
 
-        messages = [{"role": "system", "content": self.__system_prompt}] + \
+        messages = [{"role": "system", "content": self.__get_system_prompt()}] + \
             converted_history + \
             [{"role": "user", "content": user_input}]
 
@@ -216,5 +243,8 @@ class Agent:
             self.__history["history"].append({
                 "user_message": user_input,
                 "assistant_message": response_content,
-                "emotion": 50,
+                "emotion": self.__get_new_emotion(user_input, response_content),
             })
+
+    def __get_new_emotion(self, user: str, assistant: str) -> int:
+        return self.__emotion.get(self.__history["history"], user, assistant)
