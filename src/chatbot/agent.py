@@ -14,7 +14,7 @@ from .types import AgentConfig, ChatHistoryV1, SystemPrompt
 from .validators.validator import validate
 from .validators.agent_config import schema as agent_config_schema
 from .validators.chat_history import schema_v0 as chat_history_schema_v0, schema_v1 as chat_history_schema_v1
-from .prompts import system_prompt
+from .prompts import system_prompt, agent_description_prompt, user_description_prompt
 
 
 def chat_history_converter(historyV0: list[ChatHistoryV0Item]) -> ChatHistoryV1:
@@ -75,18 +75,11 @@ class Agent:
         self.__max_tokens: int = config_file_content.get("maxTokens", 2048)
         self.__history: ChatHistoryV1 = {"version": "v1", "history": []}
 
-        # Load user system prompt from config file.
-        self.__user_system_prompt: str
-        system_prompt_config = config_file_content.get("systemPrompt")
-        if system_prompt_config is None:
-            self.__user_system_prompt = ""
-        elif system_prompt_config["type"] == "text":
-            self.__user_system_prompt = system_prompt_config["content"].strip()
-        elif system_prompt_config["type"] == "file":
-            with open(os.path.join(Agent.__AGENT_FOLDER, self.name, system_prompt_config["path"]), "r", encoding="utf-8") as file:
-                self.__user_system_prompt = file.read().strip()
-        else:
-            self.__user_system_prompt = ""
+        # Load description from config file.
+        self.__agent_description: str = self.__load_description(
+            config_file_content.get("agentDescription"))
+        self.__user_description: str = self.__load_description(
+            config_file_content.get("userDescription"))
 
         # Create OpenAI client with the provided API key and base URL.
         self.__client: OpenAI = OpenAI(
@@ -181,9 +174,31 @@ class Agent:
             emotion = Agent.__DEFAULT_EMOTION
 
         return system_prompt.format(
-            user_system_prompt=self.__user_system_prompt,
+            agent_description=(agent_description_prompt.format(
+                prompt=self.__agent_description) if self.__agent_description else ""),
+            user_description=(user_description_prompt.format(
+                prompt=self.__user_description) if self.__user_description else ""),
             emotion_value=emotion,
         )
+
+    def __load_description(self, prompt: SystemPrompt | None) -> str:
+        """
+        Loads the system prompt from a file or uses the provided text.
+
+        :param SystemPrompt prompt: The system prompt configuration.
+        :return: The loaded system prompt.
+        :rtype: str
+        """
+        if prompt is None:
+            return ""
+
+        if prompt["type"] == "file":
+            with open(os.path.join(Agent.__AGENT_FOLDER, self.name, prompt["path"]), "r", encoding="utf-8") as file:
+                return file.read().strip()
+        elif prompt["type"] == "text":
+            return prompt["content"].strip()
+        else:
+            return ""
 
     def __load_history(self, path: str):
         """
