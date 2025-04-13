@@ -36,7 +36,7 @@ class ConsoleCommand:
             printer = StreamResponsePrinter()
             for chunk in response:
                 printer.write(chunk)
-            print(colorama.Style.RESET_ALL)
+            print(colorama.Style.RESET_ALL, flush=True)
         except Exception as e:
             print(f"Error: {e}\n{traceback.format_exc()}", file=sys.stderr)
 
@@ -73,7 +73,6 @@ class ConsoleCommand:
                     self.__log_agent_not_loaded()
                     return
                 self.__receive_response(self.__agent.regenerate())
-                print(colorama.Style.RESET_ALL, end="", flush=True)
             case "/exit" | "/bye":
                 self.exit()
             case "/help" | "/?":
