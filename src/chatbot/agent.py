@@ -145,7 +145,7 @@ class Agent:
         if len(self.__history["history"]) == 0:
             return (_ for _ in [])  # Empty generator
 
-        last_user_message = self.__history["history"][-1]["content"]
+        last_user_message = self.__history["history"][-1]["user_message"]
 
         self.__history["history"] = self.__history["history"][:-1]
 
