@@ -73,7 +73,7 @@ class ConsoleCommand:
                     self.__log_agent_not_loaded()
                     return
                 self.__receive_response(self.__agent.regenerate())
-                print(colorama.Style.RESET_ALL)
+                print(colorama.Style.RESET_ALL, end="", flush=True)
             case "/exit" | "/bye":
                 self.exit()
             case "/help" | "/?":
