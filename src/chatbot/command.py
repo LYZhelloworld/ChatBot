@@ -165,7 +165,7 @@ class StreamResponsePrinter:
 
         if chunk == self.__THINK_TAG_END:
             self.__is_inside_think_tag = False
-            print(colorama.Style.NORMAL, end="", flush=True)
+            print(colorama.Style.BRIGHT, end="", flush=True)
 
     @property
     def response(self) -> str:
