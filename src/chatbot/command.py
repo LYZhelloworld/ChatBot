@@ -134,7 +134,7 @@ class ConsoleCommand:
             self.__log_agent_not_loaded()
             return
 
-        for item in self.__agent.history()["history"]:
+        for item in self.__agent.history()["history"][-20:]:
             print(">>> " + item["user_message"].replace("\n", "\n... "))
             print(colorama.Style.BRIGHT +
                   item["assistant_message"] + colorama.Style.RESET_ALL)
@@ -165,7 +165,8 @@ class StreamResponsePrinter:
 
         if chunk == self.__THINK_TAG_END:
             self.__is_inside_think_tag = False
-            print(colorama.Style.BRIGHT, end="", flush=True)
+            print(colorama.Style.RESET_ALL +
+                  colorama.Style.BRIGHT, end="", flush=True)
 
     @property
     def response(self) -> str:
