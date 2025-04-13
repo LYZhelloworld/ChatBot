@@ -153,6 +153,7 @@ class StreamResponsePrinter:
     def __init__(self):
         self.__is_inside_think_tag: bool = False
         self.__response: str = ""
+        print(colorama.Style.BRIGHT, end="", flush=True)
 
     def write(self, chunk: str):
         if chunk == self.__THINK_TAG_START:
