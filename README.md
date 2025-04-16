@@ -9,26 +9,32 @@ ChatBot 是一个基于本地部署 LLM 的交互式聊天工具。
 如果希望本地运行，请安装 [Ollama](https://ollama.com)，否则请在配置文件中提供 API 密钥。
 
 ### 环境设置
-请确保已安装 Python 3.10 或更高版本。推荐版本为 3.13。
+请确保已安装 Python 3.12 或更高版本。推荐版本为 3.13。
 
-安装 [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer)。
+安装 [uv](https://docs.astral.sh/uv/getting-started/installation/)。
 
 ```powershell
-(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
-
-# 检查 Poetry 是否安装成功
-poetry --version
+pip install uv
 ```
 
-激活虚拟环境并安装依赖项。参见：[Managing environments](https://python-poetry.org/docs/managing-environments/#powershell)。
+如果你没有安装 `pip`，可以使用以下命令安装 `uv`：
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+如果你用的是 Mac OS X 或 Linux，请使用以下命令安装 `uv`：
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+激活虚拟环境。
 
 ```powershell
 # 激活虚拟环境
-python -m venv .venv
-Invoke-Expression (poetry env activate)
-
-# 安装依赖项
-poetry install
+uv venv
+.venv\Scripts\activate
 ```
 
 ### 创建智能体
@@ -51,16 +57,14 @@ poetry install
 1. 在该目录下创建一个名为 `system.md` 的文件，用于存放系统提示词。
 
 ## 使用方法
-在 Python 环境中运行：
-
 ```powershell
-python src/main.py
+uv run src/main.py
 ```
 
 如果你想在运行时加载一个智能体，可以将智能体的名字作为参数传递：
   
 ```powershell
-python src/main.py my-agent
+uv run src/main.py my-agent
 ```
 
 构建可执行文件：
