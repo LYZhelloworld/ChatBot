@@ -9,26 +9,32 @@ This tool is based on OpenAI API model.
 Please install [Ollama](https://ollama.com) If you want to run locally. Otherwise, please provide an API token in the configuration file.
 
 ### Environment Setup
-Please make sure you have Python 3.10 or higher installed. Recommended version is 3.13.
+Please make sure you have Python 3.12 or higher installed. Recommended version is 3.13.
 
-Install [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer).
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
 ```powershell
-(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
-
-# Check if Poetry is installed successfully
-poetry --version
+pip install uv
 ```
 
-Activate the virtual environment and install dependencies. See: [Managing environments](https://python-poetry.org/docs/managing-environments/#powershell).
+If you don't have `pip` installed, you can install `uv` using the following command:
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+If you are using Mac OS X or Linux, you can install `uv` using the following command:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Activate the virtual environment.
 
 ```powershell
 # Activate virtual environment
-python -m venv .venv
-Invoke-Expression (poetry env activate)
-
-# Install dependencies
-poetry install
+uv venv
+.venv\Scripts\activate
 ```
 
 ### Create Agent
@@ -54,13 +60,13 @@ poetry install
 Run with Python environment:
 
 ```powershell
-python src/main.py
+uv run src/main.py
 ```
 
 If you want to load an agent at startup, you can pass the agent name as an argument:
 
 ```powershell
-python src/main.py my-agent
+uv run src/main.py my-agent
 ```
 
 Build an executable file:
