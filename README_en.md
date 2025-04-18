@@ -89,25 +89,7 @@ Available commands:
 ### Chat
 Type the message you want to send to the agent. **You need to use `/load` to load an agent first before sending.**
 
-If you want to send a multi-line message, use triple single quotes (''') or triple double quotes (""") to start and end the message. For example:
-
-```
-'''
-First line
-Second line
-Third line
-'''
-```
-
-Or
-
-```
-"""
-First line
-Second line
-Third line
-"""
-```
+Please press `Tab` key if you want to insert a newline to send multi-line messages. `Enter` key will send the message.
 
 ### Chat History
 Chat history is autosaved under the `agent` folder with the name `history.json`.

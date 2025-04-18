@@ -3,45 +3,47 @@ import traceback
 
 from prompt_toolkit import HTML, PromptSession, print_formatted_text as print
 from prompt_toolkit.formatted_text import FormattedText
-from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.key_binding import KeyBindings, KeyPressEvent
 
 from chatbot.agent import Agent
 from chatbot.types import StreamedResponse
 
 
 class ConsoleCommand:
-    __MULTILINE_TAGS = ["'''", '"""']
     __INPUT_PROMPT = ">>> "
-    __INPUT_MULTILINE_PROMPT = "... "
 
     def __init__(self):
         self.__agent: Agent | None = None
         self.__session = PromptSession()
+        self.__running = False
 
     def start(self):
-        while True:
-            input_content = self.input()
-            if input_content.strip() == "":
-                continue
+        self.__running = True
 
-            if input_content.startswith("/"):
-                self.handle_commands(input_content)
-                continue
+        try:
+            while self.__running:
+                input_content = self.input()
+                if input_content.strip() == "":
+                    continue
 
-            if not self.__agent:
-                self.__log_agent_not_loaded()
-                continue
+                if input_content.startswith("/"):
+                    self.handle_commands(input_content)
+                    continue
 
-            self.__receive_response(self.__agent.chat(input_content))
+                if not self.__agent:
+                    self.__log_agent_not_loaded()
+                    continue
+
+                self.__receive_response(self.__agent.chat(input_content))
+        except Exception as e:
+            print(HTML('<ansired>Error: {error}\n{stack_trace}</ansired>').format(
+                error=e, stack_trace=traceback.format_exc()), file=sys.stderr)
 
     def __receive_response(self, response: StreamedResponse):
-        try:
-            printer = StreamResponsePrinter()
-            for chunk in response:
-                printer.write(chunk)
-            print()
-        except Exception as e:
-            print(f"Error: {e}\n{traceback.format_exc()}", file=sys.stderr)
+        printer = StreamResponsePrinter()
+        for chunk in response:
+            printer.write(chunk)
+        print()
 
     def __log_agent_not_loaded(self):
         print(HTML('<ansired>Please load an agent with <b>/load &lt;agent-name&gt;</b> first.</ansired>'))
@@ -55,7 +57,7 @@ class ConsoleCommand:
                 for agent in Agent.list_agents():
                     if agent == current_agent:
                         print(
-                            HTML(f'- <ansigreen><b>{agent}</b></ansigreen> (current)'))
+                            HTML('- <ansigreen><b>{agent}</b></ansigreen> (current)').format(agent=agent))
                     else:
                         print(f'- {agent}')
             case "/load":
@@ -81,31 +83,29 @@ class ConsoleCommand:
                 self.help()
 
     def load_agent(self, agent_name: str):
-        try:
-            self.__agent = Agent(agent_name)
-            self.history()
-            print(HTML(f'<gray>(History restored)</gray>'))
-        except Exception as e:
-            print(f"Error: {e}\n{traceback.format_exc()}", file=sys.stderr)
+        self.__agent = Agent(agent_name)
+        self.history()
+        print(HTML(f'<gray>(History restored)</gray>'))
 
     def input(self) -> str:
         """
-        Accept user input with support for single-line and multi-line modes.
+        Accept user input.
 
-        Single-line mode is triggered by input other than triple single quotes or triple double quotes.
-
-        Multi-line mode is triggered by triple single quotes or triple double quotes and ends when the same is entered again.
+        New line is inserted with the tab key.
         """
-        input_content = self.__session.prompt(self.__INPUT_PROMPT)
-        if input_content in self.__MULTILINE_TAGS:
-            tag = input_content
-            lines = []
-            while True:
-                line = self.__session.prompt(self.__INPUT_MULTILINE_PROMPT)
-                if line == tag:
-                    break
-                lines.append(line)
-            return "\n".join(lines)
+        bindings = KeyBindings()
+
+        @bindings.add("tab")
+        def _(event: KeyPressEvent):
+            """Tab key is to insert a new line."""
+            event.app.current_buffer.insert_text("\n")
+
+        input_content = self.__session.prompt(
+            self.__INPUT_PROMPT,
+            key_bindings=bindings,
+            bottom_toolbar=lambda: HTML(
+                '<b>[Tab]</b> Newline | <b>[Enter]</b> Send | <b>/?</b> Help')
+        )
         return input_content
 
     def help(self):
@@ -131,14 +131,14 @@ class ConsoleCommand:
             return
 
         for item in self.__agent.history()["history"][-20:]:
-            print(">>> " + item["user_message"].replace("\n", "\n... "))
-            print(FormattedText(
-                [('bold', item["assistant_message"])]))
+            print(self.__INPUT_PROMPT + item["user_message"])
+            print(
+                HTML('<b>{message}</b>').format(message=item["assistant_message"]))
 
     def exit(self):
         if self.__agent:
             self.__agent.save()
-        sys.exit()
+        self.__running = False
 
 
 class StreamResponsePrinter:
