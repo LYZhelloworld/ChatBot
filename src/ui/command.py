@@ -10,14 +10,25 @@ from chatbot.types import StreamedResponse
 
 
 class ConsoleCommand:
+    """
+    The command line interface for interacting with the chatbot agent.
+    """
     __INPUT_PROMPT = ">>> "
 
     def __init__(self):
+        """
+        Initializes the command line interface.
+        """
+
         self.__agent: Agent | None = None
         self.__session = PromptSession()
         self.__running = False
 
     def start(self):
+        """
+        Starts the command line interface.
+        """
+
         self.__running = True
 
         try:
@@ -34,21 +45,38 @@ class ConsoleCommand:
                     self.__log_agent_not_loaded()
                     continue
 
-                self.__receive_response(self.__agent.chat(input_content))
+                self.__print_response(self.__agent.chat(input_content))
         except Exception as e:
             print(HTML('<ansired>Error: {error}\n{stack_trace}</ansired>').format(
                 error=e, stack_trace=traceback.format_exc()), file=sys.stderr)
 
-    def __receive_response(self, response: StreamedResponse):
+    def __print_response(self, response: StreamedResponse):
+        """
+        Prints the streamed response from the agent to the console.
+
+        :param StreamedResponse response: The response from the agent.
+        """
+
         printer = StreamResponsePrinter()
         for chunk in response:
             printer.write(chunk)
         print()
 
     def __log_agent_not_loaded(self):
+        """
+        Logs a message indicating that no agent is loaded.
+        """
+
         print(HTML('<ansired>Please load an agent with <b>/load &lt;agent-name&gt;</b> first.</ansired>'))
 
     def handle_commands(self, command: str):
+        """
+        Handles commands entered by the user.
+        All commands are prefixed with a '/' character.
+
+        :param str command: The command entered by the user.
+        """
+
         commands = command.strip().lower().split(" ")
         match commands[0]:
             case "/list":
@@ -72,7 +100,7 @@ class ConsoleCommand:
                 if not self.__agent:
                     self.__log_agent_not_loaded()
                     return
-                self.__receive_response(self.__agent.regenerate())
+                self.__print_response(self.__agent.regenerate())
             case "/exit" | "/bye":
                 self.exit()
             case "/help" | "/?":
@@ -83,15 +111,19 @@ class ConsoleCommand:
                 self.help()
 
     def load_agent(self, agent_name: str):
+        """
+        Loads an agent by name.
+
+        :param str agent_name: The name of the agent to load.
+        """
         self.__agent = Agent(agent_name)
         self.history()
         print(HTML(f'<gray>(History restored)</gray>'))
 
     def input(self) -> str:
         """
-        Accept user input.
-
-        New line is inserted with the tab key.
+        Accepts user input.
+        Newline is inserted with the tab key.
         """
         bindings = KeyBindings()
 
@@ -109,6 +141,10 @@ class ConsoleCommand:
         return input_content
 
     def help(self):
+        """
+        Displays help information for the command line interface.
+        """
+
         print("Type the message you want to send to the agent.")
         print("If you want to send a multi-line message, use triple single quotes (''') or triple double quotes (\"\"\") to start and end the message.")
         print("")
@@ -126,6 +162,10 @@ class ConsoleCommand:
             HTML('<b>/help</b> or <b>/?</b> - Show this help message.'))
 
     def history(self):
+        """
+        Displays the conversation history.
+        """
+
         if not self.__agent:
             self.__log_agent_not_loaded()
             return
@@ -136,20 +176,38 @@ class ConsoleCommand:
                 HTML('<b>{message}</b>').format(message=item["assistant_message"]))
 
     def exit(self):
+        """
+        Exits the command line interface.
+        """
+
         if self.__agent:
             self.__agent.save()
         self.__running = False
 
 
 class StreamResponsePrinter:
+    """
+    A class to print streamed responses from the agent to the console.
+    """
+
     __THINK_TAG_START = "<think>"
     __THINK_TAG_END = "</think>"
 
     def __init__(self):
+        """
+        Initializes the class.
+        """
+
         self.__is_inside_think_tag: bool = False
         self.__response: str = ""
 
     def write(self, chunk: str):
+        """
+        Writes a chunk of the streamed response to the console.
+
+        :param str chunk: The chunk of the response to write.
+        """
+
         if chunk == self.__THINK_TAG_START:
             self.__is_inside_think_tag = True
 
@@ -162,7 +220,3 @@ class StreamResponsePrinter:
 
         if chunk == self.__THINK_TAG_END:
             self.__is_inside_think_tag = False
-
-    @property
-    def response(self) -> str:
-        return self.__response

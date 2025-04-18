@@ -10,19 +10,27 @@ from chatbot.chat_history_loader import load_chat_history
 from chatbot.types import StreamedResponse
 from emotion.emotion import Emotion, DEFAULT_EMOTION
 from utils.utils import remove_think_tags
-from .types import AgentConfig, ChatHistoryV1, SystemPrompt
+from .types import AgentConfig, ChatHistoryV1, PromptSchema
 from .validators.validator import validate
 from .validators.agent_config import schema as agent_config_schema
 from .prompts import system_prompt, agent_description_prompt, user_description_prompt
 
 
 class Agent:
+    """
+    Represents a chatbot agent that interacts with the LLM.
+    """
     __BASE_PATH = os.path.dirname(os.path.abspath(sys.argv[0]))
     __AGENT_FOLDER = os.path.join(__BASE_PATH, "agents")
     __CONFIG_FILE_NAME = "config.json"
     __HISTORY_FILE_NAME = "history.json"
 
     def __init__(self, name: str):
+        """
+        Initializes the Agent instance with the given name.
+
+        :param str name: The name of the agent.
+        """
         self.__name: str = name
 
         # Config file is located in `./agents/{agent_name}/config.json`.
@@ -74,10 +82,22 @@ class Agent:
 
     @property
     def name(self) -> str:
+        """
+        Returns the name of the agent.
+
+        :return: The name of the agent.
+        :rtype: str
+        """
         return self.__name
 
     @staticmethod
     def list_agents() -> list[str]:
+        """
+        Lists all available agents in the agent folder.
+
+        :return: A list of agent names.
+        :rtype: list[str]
+        """
         if not os.path.exists(Agent.__AGENT_FOLDER):
             return []
 
@@ -101,6 +121,12 @@ class Agent:
         self.save()
 
     def history(self) -> ChatHistoryV1:
+        """
+        Returns the chat history of the agent.
+
+        :return: The chat history.
+        :rtype: ChatHistoryV1
+        """
         return self.__history
 
     def regenerate(self) -> StreamedResponse:
@@ -123,6 +149,9 @@ class Agent:
         self.save()
 
     def save(self):
+        """
+        Saves the current chat history to a file.
+        """
         history_file_path = os.path.join(
             Agent.__AGENT_FOLDER, self.name, Agent.__HISTORY_FILE_NAME)
         with open(history_file_path, "w", encoding="utf-8") as file:
@@ -131,6 +160,7 @@ class Agent:
     def __get_system_prompt(self) -> str:
         """
         Generates system prompt based on the user system prompt and the current emotion value.
+
         :return: The system prompt string.
         :rtype: str
         """
@@ -150,11 +180,11 @@ class Agent:
             emotion_value=emotion,
         )
 
-    def __load_description(self, prompt: SystemPrompt | None) -> str:
+    def __load_description(self, prompt: PromptSchema | None) -> str:
         """
-        Loads the system prompt from a file or uses the provided text.
+        Loads the description prompt from a file or uses the provided text.
 
-        :param SystemPrompt prompt: The system prompt configuration.
+        :param PromptSchema, optional prompt: The description prompt.
         :return: The loaded system prompt.
         :rtype: str
         """
@@ -183,6 +213,13 @@ class Agent:
             print("Cannot load history file. History will be empty.")
 
     def __chat(self, user_input: str) -> StreamedResponse:
+        """
+        Sends a message to the chatbot and get a streamed response.
+
+        :param str user_input: The user's input message.
+        :return: The response in stream.
+        :rtype: StreamedResponse
+        """
         converted_history = []
         for item in self.__history["history"][-self.__history_limit:]:
             converted_history.append({
@@ -224,4 +261,12 @@ class Agent:
             })
 
     def __get_new_emotion(self, user: str, assistant: str) -> int:
+        """
+        Returns the new emotion value based on the user and assistant messages.
+
+        :param str user: The user's message.
+        :param str assistant: The assistant's message.
+        :return: The new emotion value.
+        :rtype: int
+        """
         return self.__emotion.get(self.__history["history"], user, assistant)

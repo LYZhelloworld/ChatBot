@@ -11,6 +11,9 @@ DEFAULT_EMOTION = 50
 class Emotion:
     """
     A class to handle emotion value of an agent.
+    Emotion is a value between -100 and 100.
+    The emotion value is used to determine the emotional state of the agent.
+    The default emotion value is 50.
     """
 
     __TEMPERATURE = 0.0
@@ -19,10 +22,7 @@ class Emotion:
     __EMOTION_MIN = -100
     __EMOTION_MAX = 100
 
-    def __init__(self,
-                 model: str,
-                 base_url: str,
-                 api_key: str):
+    def __init__(self, model: str, base_url: str, api_key: str):
         """
         Initializes the Emotion instance.
 

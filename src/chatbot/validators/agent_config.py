@@ -50,7 +50,7 @@ schema = {
             "type": "string"
         },
         "historyLimit": {
-            "description": "The maximum number of history records to be used as the context. Default value is 20.\n\nNote that one pair of user-assistant chat history is counted as two records.",
+            "description": "The maximum number of history records to be used as the context. Default value is 20.\n\nNote that one pair of user-assistant chat history is counted as one record.",
             "type": "number"
         },
         "maxTokens": {

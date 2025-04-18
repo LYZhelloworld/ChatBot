@@ -47,14 +47,14 @@ uv venv
       "model": "qwen2.5-7b",
       "baseURL": "http://localhost:11434/v1",
       "apiKey": "ollama",
-      "systemPrompt": {
+      "agentDescription": {
         "type": "file",
         "path": "system.md"
       },
       "temperature": 0.7
     }
     ```
-1. Create a file `system.md` in the directory with any system prompts.
+1. Create a file `system.md` in the directory with any agent prompts.
 
 ## How to Use
 Run with Python environment:
@@ -98,11 +98,11 @@ Chat history is autosaved under the `agent` folder with the name `history.json`.
 - `model`: The model used by the agent.
 - `baseURL`: The URL of the LLM server API.
 - `apiKey`: The API key used by the LLM server. Please provide an arbitrary API key if your server is hosted locally.
-- `systemPrompt`: (Optional) The system prompt to be used by the agent. It can be either a file or a text string.
+- `agentDescription`: (Optional) The prompt to be used by the agent. It can be either a file or a text string.
     - If the `type` is `"file"`, please provide a `path` to the prompt file. The path is relative to the directory of the `config.json` file.
         ```json
         {
-          "systemPrompt": {
+          "agentDescription": {
             "type": "file",
             "path": "system.md"
           }
@@ -111,10 +111,11 @@ Chat history is autosaved under the `agent` folder with the name `history.json`.
     - If the `type` is `text`, please provide the prompt directly in the `content` field.
         ```json
         {
-          "systemPrompt": {
+          "agentDescription": {
             "type": "text",
             "content": "You are an assistant that answers user's questions."
           }
         }
         ```
+- `userDescription`: (Optional) The prompt to be used by the user. It can be either a file or a text string. The format is similar to `agentDescription`.
 - `temperature`: (Optional) The temperature used by the model. Default value is `0.7`.

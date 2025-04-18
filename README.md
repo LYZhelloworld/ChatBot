@@ -47,14 +47,14 @@ uv venv
       "model": "qwen2.5-7b",
       "baseURL": "http://localhost:11434/v1",
       "apiKey": "ollama",
-      "systemPrompt": {
+      "agentDescription": {
         "type": "file",
         "path": "system.md"
       },
       "temperature": 0.7
     }
     ```
-1. 在该目录下创建一个名为 `system.md` 的文件，用于存放系统提示词。
+1. 在该目录下创建一个名为 `system.md` 的文件，用于存放智能体提示词。
 
 ## 使用方法
 ```powershell
@@ -96,11 +96,11 @@ pyinstaller --onefile --console --distpath dist --name "ChatBot" -y src/main.py
 - `model`: 智能体使用的模型。
 - `baseURL`: LLM 服务器 API 的 URL。
 - `apiKey`: LLM 服务器使用的 API 密钥。如果服务器是本地托管的，请提供任意 API 密钥。
-- `systemPrompt`: （可选）智能体使用的系统提示词。可以是文件或文本字符串。
+- `agentDescription`: （可选）智能体使用的提示词。可以是文件或文本字符串。
     - 如果 `type` 是 `"file"`，请提供提示文件的 `path`。路径是相对于 `config.json` 文件的目录。
         ```json
         {
-          "systemPrompt": {
+          "agentDescription": {
             "type": "file",
             "path": "system.md"
           }
@@ -109,10 +109,11 @@ pyinstaller --onefile --console --distpath dist --name "ChatBot" -y src/main.py
     - 如果 `type` 是 `"text"`，请直接在 `content` 字段中提供提示词。
         ```json
         {
-          "systemPrompt": {
+          "agentDescription": {
             "type": "text",
             "content": "你是一个 AI 助手，用于回答用户问题。"
           }
         }
         ```
+- `userDescription`：（可选）用户使用的提示词。可以是文件或文本字符串。格式同 `agentDescription`。
 - `temperature`: （可选）模型使用的温度值。默认值为 `0.7`。
