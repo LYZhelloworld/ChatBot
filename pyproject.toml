@@ -14,12 +14,8 @@ dependencies = [
     "openai (>=1.72.0,<2.0.0)",
 ]
 
-[tool.poetry]
-
-[tool.poetry.group.dev.dependencies]
-autopep8 = "^2.3.2"
-pyinstaller = "^6.12.0"
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "autopep8>=2.3.2",
+    "pyinstaller>=6.13.0",
+]
