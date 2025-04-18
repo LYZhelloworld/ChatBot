@@ -9,9 +9,9 @@ license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
 dependencies = [
-    "colorama (>=0.4.6,<0.5.0)",
     "jsonschema (>=4.23.0,<5.0.0)",
     "openai (>=1.72.0,<2.0.0)",
+    "prompt-toolkit>=3.0.51",
 ]
 
 [dependency-groups]
