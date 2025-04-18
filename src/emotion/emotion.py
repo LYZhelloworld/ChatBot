@@ -5,6 +5,8 @@ from chatbot.types import ChatHistoryV1Item
 from utils.utils import remove_think_tags
 from .prompts import system_prompt, chat_history_item
 
+DEFAULT_EMOTION = 50
+
 
 class Emotion:
     """
@@ -16,7 +18,6 @@ class Emotion:
     __HISTORY_LIMIT = 10
     __EMOTION_MIN = -100
     __EMOTION_MAX = 100
-    __EMOTION_DEFAULT = 50
 
     def __init__(self,
                  model: str,
@@ -51,7 +52,7 @@ class Emotion:
             history = history[-Emotion.__HISTORY_LIMIT:]
 
         if len(history) == 0:
-            return Emotion.__EMOTION_DEFAULT
+            return DEFAULT_EMOTION
 
         messages: list[ChatCompletionMessageParam] = []
         messages.append({"role": "system", "content": system_prompt})
@@ -81,6 +82,6 @@ class Emotion:
                 response.choices[0].message.content.strip()))
         except ValueError:
             emotion = history[-1]["emotion"] if len(
-                history) > 0 else Emotion.__EMOTION_DEFAULT
+                history) > 0 else DEFAULT_EMOTION
 
         return max(Emotion.__EMOTION_MIN, min(Emotion.__EMOTION_MAX, emotion))

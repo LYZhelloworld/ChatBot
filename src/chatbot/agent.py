@@ -6,43 +6,14 @@ import traceback
 from openai import OpenAI, Stream
 from openai.types.chat import ChatCompletionChunk
 
-from chatbot.types import ChatHistoryV0Item, StreamedResponse
-from emotion.emotion import Emotion
+from chatbot.chat_history_loader import load_chat_history
+from chatbot.types import StreamedResponse
+from emotion.emotion import Emotion, DEFAULT_EMOTION
 from utils.utils import remove_think_tags
 from .types import AgentConfig, ChatHistoryV1, SystemPrompt
 from .validators.validator import validate
 from .validators.agent_config import schema as agent_config_schema
-from .validators.chat_history import schema_v0 as chat_history_schema_v0, schema_v1 as chat_history_schema_v1
 from .prompts import system_prompt, agent_description_prompt, user_description_prompt
-
-
-def chat_history_converter(historyV0: list[ChatHistoryV0Item]) -> ChatHistoryV1:
-    """
-    Converts a list of ChatHistoryV0Item to ChatHistoryV1 format.
-
-    :param historyV0: The chat history in V0 format.
-    :return: The chat history in V1 format.
-    :rtype: ChatHistoryV1
-    """
-    iterator = iter(historyV0)
-    result: ChatHistoryV1 = {
-        "version": "v1",
-        "history": [],
-    }
-
-    try:
-        while True:
-            user = next(iterator)
-            assistant = next(iterator)
-            result["history"].append({
-                "user_message": user["content"],
-                "assistant_message": assistant["content"],
-                "emotion": Agent.DEFAULT_EMOTION,
-            })
-    except StopIteration:
-        pass
-
-    return result
 
 
 class Agent:
@@ -50,7 +21,6 @@ class Agent:
     __AGENT_FOLDER = os.path.join(__BASE_PATH, "agents")
     __CONFIG_FILE_NAME = "config.json"
     __HISTORY_FILE_NAME = "history.json"
-    DEFAULT_EMOTION = 50
 
     def __init__(self, name: str):
         self.__name: str = name
@@ -170,7 +140,7 @@ class Agent:
             emotion = self.__history["history"][-1]["emotion"]
         else:
             # If no history, use the default emotion value.
-            emotion = Agent.DEFAULT_EMOTION
+            emotion = DEFAULT_EMOTION
 
         return system_prompt.format(
             agent_description=(agent_description_prompt.format(
@@ -206,15 +176,8 @@ class Agent:
         :param str path: The path to the chat history file.
         """
         try:
-            with open(path, "r", encoding="utf-8") as file:
-                file_content = json.load(file)
-            try:
-                self.__history = chat_history_converter(
-                    validate(file_content, chat_history_schema_v0))
-                self.save()
-            except ValueError:
-                self.__history = validate(
-                    file_content, chat_history_schema_v1)
+            self.__history = load_chat_history(path)
+            self.save()
         except Exception as e:
             print(f"Warning: {str(e)}\n{traceback.format_exc()}")
             print("Cannot load history file. History will be empty.")
