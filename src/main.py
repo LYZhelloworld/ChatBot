@@ -1,5 +1,5 @@
 import sys
-from chatbot.command import ConsoleCommand
+from ui.command import ConsoleCommand
 
 
 def main(agent_name: str = None):
