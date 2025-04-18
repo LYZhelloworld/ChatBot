@@ -3,6 +3,7 @@ import traceback
 
 from prompt_toolkit import HTML, PromptSession, print_formatted_text as print
 from prompt_toolkit.formatted_text import FormattedText
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 
 from chatbot.agent import Agent
 from chatbot.types import StreamedResponse
@@ -38,6 +39,7 @@ class ConsoleCommand:
             printer = StreamResponsePrinter()
             for chunk in response:
                 printer.write(chunk)
+            print()
         except Exception as e:
             print(f"Error: {e}\n{traceback.format_exc()}", file=sys.stderr)
 
@@ -94,12 +96,12 @@ class ConsoleCommand:
 
         Multi-line mode is triggered by triple single quotes or triple double quotes and ends when the same is entered again.
         """
-        input_content = input(self.__INPUT_PROMPT)
+        input_content = self.__session.prompt(self.__INPUT_PROMPT)
         if input_content in self.__MULTILINE_TAGS:
             tag = input_content
             lines = []
             while True:
-                line = input(self.__INPUT_MULTILINE_PROMPT)
+                line = self.__session.prompt(self.__INPUT_MULTILINE_PROMPT)
                 if line == tag:
                     break
                 lines.append(line)

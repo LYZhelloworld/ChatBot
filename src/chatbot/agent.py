@@ -37,7 +37,7 @@ def chat_history_converter(historyV0: list[ChatHistoryV0Item]) -> ChatHistoryV1:
             result["history"].append({
                 "user_message": user["content"],
                 "assistant_message": assistant["content"],
-                "emotion": Agent.__DEFAULT_EMOTION,
+                "emotion": Agent.DEFAULT_EMOTION,
             })
     except StopIteration:
         pass
@@ -50,7 +50,7 @@ class Agent:
     __AGENT_FOLDER = os.path.join(__BASE_PATH, "agents")
     __CONFIG_FILE_NAME = "config.json"
     __HISTORY_FILE_NAME = "history.json"
-    __DEFAULT_EMOTION = 50
+    DEFAULT_EMOTION = 50
 
     def __init__(self, name: str):
         self.__name: str = name
@@ -170,7 +170,7 @@ class Agent:
             emotion = self.__history["history"][-1]["emotion"]
         else:
             # If no history, use the default emotion value.
-            emotion = Agent.__DEFAULT_EMOTION
+            emotion = Agent.DEFAULT_EMOTION
 
         return system_prompt.format(
             agent_description=(agent_description_prompt.format(
