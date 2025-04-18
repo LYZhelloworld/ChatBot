@@ -1,5 +1,5 @@
 # ChatBot
-[简体中文](./README.md) | [English](./README_en.md)
+[简体中文](./README.md) | [English](./README_en.md) | [日本語](./README_ja.md)
 
 ChatBot is an interactive chatting tool with local deployed LLM.
 
