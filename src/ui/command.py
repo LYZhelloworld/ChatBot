@@ -2,7 +2,7 @@ import sys
 import traceback
 
 import colorama
-from .agent import Agent
+from chatbot.agent import Agent
 from chatbot.types import StreamedResponse
 
 
