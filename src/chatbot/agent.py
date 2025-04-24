@@ -10,7 +10,7 @@ from chatbot.chat_history_loader import load_chat_history
 from chatbot.types import StreamedResponse
 from emotion.emotion import Emotion, DEFAULT_EMOTION
 from utils.utils import remove_think_tags
-from .types import AgentConfig, ChatHistoryV1, PromptSchema
+from .types import AgentConfig, ChatHistoryV1, ModelParams, PromptSchema
 from .validators.validator import validate
 from .validators.agent_config import schema as agent_config_schema
 from .prompts import system_prompt, agent_description_prompt, user_description_prompt
@@ -47,9 +47,9 @@ class Agent:
 
         # Load agent configuration from config file.
         self.__model: str = config_file_content.get("model")
-        self.__temperature: float = config_file_content.get("temperature", 0.7)
+        self.__model_params: ModelParams = config_file_content.get(
+            "modelParams", ModelParams())
         self.__history_limit: int = config_file_content.get("historyLimit", 20)
-        self.__max_tokens: int = config_file_content.get("maxTokens", 2048)
         self.__history: ChatHistoryV1 = {"version": "v1", "history": []}
 
         # Load description from config file.
@@ -239,8 +239,11 @@ class Agent:
             model=self.__model,
             messages=messages,
             stream=True,
-            temperature=self.__temperature,
-            max_completion_tokens=self.__max_tokens,
+            frequency_penalty=self.__model_params.get("frequency_penalty"),
+            max_tokens=self.__model_params.get("max_tokens"),
+            presence_penalty=self.__model_params.get("presence_penalty"),
+            temperature=self.__model_params.get("temperature"),
+            top_p=self.__model_params.get("top_p"),
         )
 
         response_content = ""

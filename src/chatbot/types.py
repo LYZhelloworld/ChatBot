@@ -49,6 +49,25 @@ class PromptText(TypedDict):
 type PromptSchema = Union[PromptFile, PromptText]
 
 
+class ModelParams(TypedDict, total=False):
+    """
+    The parameters passed to the model.
+
+    Attributes:
+        frequency_penalty (float, optional): Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
+        max_tokens (int, optional): The maximum number of tokens that can be generated in the chat completion. This value can be used to control costs for text generated via API.
+        presence_penalty (float, optional): Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
+        temperature (float, optional): What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
+        top_p (float, optional): An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+    """
+
+    frequency_penalty: float | None
+    max_tokens: int | None
+    presence_penalty: float | None
+    temperature: float | None
+    top_p: float | None
+
+
 class AgentConfig(TypedDict, total=False):
     """
     Represents the configuration for an agent.
@@ -59,9 +78,8 @@ class AgentConfig(TypedDict, total=False):
         apiKey (str): The API key used by the LLM server.
         agentDescription (PromptSchema, optional): The prompt to be used by the agent. It can be either a file or a text string.
         userDescription (PromptSchema, optional): The prompt to be used by the user. It can be either a file or a text string.
-        temperature (float, optional): The temperature used by the model. Default value is 0.7.
         historyLimit (int, optional): The maximum number of history records to be used as the context. Default is 20. Note that one pair of user-assistant chat history is counted as one record.
-        maxTokens (int, optional): The maximum number of tokens to be used in the response. Default value is 2048.
+        modelParams (optional): The parameters passed to the model.
     """
 
     model: str
@@ -69,6 +87,5 @@ class AgentConfig(TypedDict, total=False):
     apiKey: str
     agentDescription: PromptSchema | None
     userDescription: PromptSchema | None
-    temperature: float | None  # Optional, default is 0.7
     historyLimit: int | None  # Optional, default is 20
-    maxTokens: int | None  # Optional, default is 2048
+    modelParams: ModelParams | None
