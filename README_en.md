@@ -50,8 +50,7 @@ uv venv
       "agentDescription": {
         "type": "file",
         "path": "system.md"
-      },
-      "temperature": 0.7
+      }
     }
     ```
 1. Create a file `system.md` in the directory with any agent prompts.
@@ -118,4 +117,9 @@ Chat history is autosaved under the `agent` folder with the name `history.json`.
         }
         ```
 - `userDescription`: (Optional) The prompt to be used by the user. It can be either a file or a text string. The format is similar to `agentDescription`.
-- `temperature`: (Optional) The temperature used by the model. Default value is `0.7`.
+- `modelParams`: (Optional) The parameters passed to the model.
+    - `frequency_penalty`: (Optional) Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
+    - `max_tokens`: (Optional) The maximum number of tokens that can be generated in the chat completion. This value can be used to control costs for text generated via API.
+    - `presence_penalty`: (Optional) Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
+    - `temperature`: (Optional) What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
+    - `top_p`: (Optional) An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.

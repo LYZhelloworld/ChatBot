@@ -50,8 +50,7 @@ uv venv
       "agentDescription": {
         "type": "file",
         "path": "system.md"
-      },
-      "temperature": 0.7
+      }
     }
     ```
 1. 在该目录下创建一个名为 `system.md` 的文件，用于存放智能体提示词。
@@ -116,4 +115,9 @@ pyinstaller --onefile --console --distpath dist --name "ChatBot" -y src/main.py
         }
         ```
 - `userDescription`：（可选）用户使用的提示词。可以是文件或文本字符串。格式同 `agentDescription`。
-- `temperature`: （可选）模型使用的温度值。默认值为 `0.7`。
+- `modelParams`：（可选）智能体使用模型的参数。
+    - `frequency_penalty`：（可选）在-2.0到2.0之间的数值。正值会根据新 token 在已有文本中的出现频率进行惩罚，降低模型逐字重复相同内容的可能性。
+    - `max_tokens`：（可选）聊天补全生成的最大 token 数量。此参数可用于控制通过 API 生成文本的成本。
+    - `presence_penalty`：（可选）在-2.0到2.0之间的数值。正值会根据新token是否已出现在文本中进行惩罚，增加模型转向新话题的可能性。
+    - `temperature`：（可选）采样温度值，范围0到2。较高值（如0.8）会使输出更随机，较低值（如0.2）会使输出更专注且确定。
+    - `top_p`：（可选）称为核采样的替代采样方式，模型会基于概率分布考虑结果。仅生成概率总和达到该阈值的最可能 token 组合（例如 top_p=0.9 时，模型会动态选择概率总和达 90% 的候选 token）。
