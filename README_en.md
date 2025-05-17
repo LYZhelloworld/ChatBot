@@ -12,11 +12,22 @@ Consider installing [Ollama](https://ollama.com) if you want to run LLM locally.
 
 ### With Docker
 
-Run the following command:
+Create container:
 
 ```bash
 docker build -t chatbot .
-docker run -it --rm chatbot
+```
+
+Run container:
+
+```bash
+# Linux or Mac OS X
+docker run -v "./src/agents:/app/src/agents" -it --rm chatbot
+```
+
+```powershell
+# Windows
+docker run -v ".\src\agents:/app/src/agents" -it --rm chatbot
 ```
 
 ### Without Docker
@@ -25,28 +36,27 @@ Please make sure you have Python 3.12 or higher installed. Recommended version i
 
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
-```powershell
+```bash
 pip install uv
 ```
 
 If you don't have `pip` installed, you can install `uv` using the following command:
 
 ```powershell
+# Windows
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-If you are using Mac OS X or Linux, you can install `uv` using the following command:
-
 ```bash
+# Linux or Mac OS X
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Activate the virtual environment.
+Create the virtual environment and download requirements.
 
-```powershell
-# Activate virtual environment
+```bash
 uv venv
-.venv\Scripts\activate
+uv sync
 ```
 
 ## Create An Agent

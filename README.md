@@ -12,11 +12,22 @@ ChatBot 是一个基于本地部署 LLM 的交互式聊天工具。
 
 ### 使用 Docker
 
-运行以下命令：
+构建容器：
 
 ```bash
 docker build -t chatbot .
-docker run -it --rm chatbot
+```
+
+运行容器：
+
+```bash
+# Linux 或 Mac OS X
+docker run -v "./src/agents:/app/src/agents" -it --rm chatbot
+```
+
+```powershell
+# Windows
+docker run -v ".\src\agents:/app/src/agents" -it --rm chatbot
 ```
 
 ### 不使用 Docker
@@ -25,28 +36,27 @@ docker run -it --rm chatbot
 
 安装 [uv](https://docs.astral.sh/uv/getting-started/installation/)。
 
-```powershell
+```bash
 pip install uv
 ```
 
 如果你没有安装 `pip`，可以使用以下命令安装 `uv`：
 
 ```powershell
+# Windows
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-如果你用的是 Mac OS X 或 Linux，请使用以下命令安装 `uv`：
-
 ```bash
+# Linux 或 Mac OS X
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-激活虚拟环境。
+创建虚拟环境并下载依赖。
 
-```powershell
-# 激活虚拟环境
+```bash
 uv venv
-.venv\Scripts\activate
+uv sync
 ```
 
 ## 创建智能体
