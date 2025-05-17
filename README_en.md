@@ -6,9 +6,21 @@ ChatBot is an interactive chatting tool with local deployed LLM.
 ## Prerequisites
 This tool is based on OpenAI API model.
 
-Please install [Ollama](https://ollama.com) If you want to run locally. Otherwise, please provide an API token in the configuration file.
+Consider installing [Ollama](https://ollama.com) if you want to run LLM locally. Otherwise, please provide an API token in the configuration file.
 
-### Environment Setup
+## Environment Setup
+
+### With Docker
+
+Run the following command:
+
+```bash
+docker build -t chatbot .
+docker run -it --rm chatbot
+```
+
+### Without Docker
+
 Please make sure you have Python 3.12 or higher installed. Recommended version is 3.13.
 
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/).
@@ -37,7 +49,7 @@ uv venv
 .venv\Scripts\activate
 ```
 
-### Create Agent
+## Create An Agent
 1. Create a folder `agents` under the `src` folder (if it does not exist).
     - If you are running the executable file, create the folder `agents` under the same directory as the executable file.
 1. Create a folder under `agents` with a proper name **without spaces**. (For example, `my-agent`).

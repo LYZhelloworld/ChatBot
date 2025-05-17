@@ -6,9 +6,21 @@ ChatBot 是一个基于本地部署 LLM 的交互式聊天工具。
 ## 前置条件
 此工具基于 OpenAI API 模型。
 
-如果希望本地运行，请安装 [Ollama](https://ollama.com)，否则请在配置文件中提供 API 密钥。
+如果希望本地运行 LLM，可以考虑安装 [Ollama](https://ollama.com)，否则请在配置文件中提供 API 密钥。
 
-### 环境设置
+## 环境设置
+
+### 使用 Docker
+
+运行以下命令：
+
+```bash
+docker build -t chatbot .
+docker run -it --rm chatbot
+```
+
+### 不使用 Docker
+
 请确保已安装 Python 3.12 或更高版本。推荐版本为 3.13。
 
 安装 [uv](https://docs.astral.sh/uv/getting-started/installation/)。
@@ -37,7 +49,7 @@ uv venv
 .venv\Scripts\activate
 ```
 
-### 创建智能体
+## 创建智能体
 1. 在 `src` 文件夹下创建一个名为 `agents` 的文件夹（如果不存在的话）。
     - 如果运行的是可执行文件，请在可执行文件所在目录下创建 `agents` 文件夹。
 1. 在 `agents` 文件夹下创建一个文件夹，注意文件夹的名字**不能有空格**。（例如：`my-agent`）。
