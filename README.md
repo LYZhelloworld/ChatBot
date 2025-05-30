@@ -21,13 +21,14 @@ docker build -t chatbot .
 运行容器：
 
 ```bash
-# Linux 或 Mac OS X
-docker run -v "./src/agents:/app/src/agents" -it --rm --network host chatbot
+docker run -v "./src/agents:/app/src/agents" -it --rm -p 8501:8501 chatbot
 ```
 
-```powershell
-# Windows
-docker run -v ".\src\agents:/app/src/agents" -it --rm --network host chatbot
+如果你使用的是 Docker 上部署的 Ollama 服务器，并且创建了一个网络（假设名为 `ollama`）：
+
+```bash
+docker run -v "./src/agents:/app/src/agents" -it --rm -p 8501:8501 --network ollama chatbot
+# 记得在 Agent 文件中设置 `baseURL` 为 `http://ollama:11434/v1`
 ```
 
 ### 不使用 Docker
@@ -42,13 +43,7 @@ pip install uv
 
 如果你没有安装 `pip`，可以使用以下命令安装 `uv`：
 
-```powershell
-# Windows
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
 ```bash
-# Linux 或 Mac OS X
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
@@ -78,37 +73,9 @@ uv sync
 1. 在该目录下创建一个名为 `system.md` 的文件，用于存放智能体提示词。
 
 ## 使用方法
-```powershell
-uv run src/main.py
+```bash
+uv run streamlit run src/main.py
 ```
-
-如果你想在运行时加载一个智能体，可以将智能体的名字作为参数传递：
-  
-```powershell
-uv run src/main.py my-agent
-```
-
-构建可执行文件：
-
-```powershell
-pyinstaller --onefile --console --distpath dist --name "ChatBot" -y src/main.py
-```
-
-可执行文件将生成在 `dist` 文件夹中。
-
-### 命令
-可用命令：
-- `/list` - 列出可用的智能体。
-- `/load <agent-name>` - 加载一个智能体。`<agent-name>` 是 `agents` 文件夹下的文件夹名称。
-- `/history` - 显示当前智能体的历史记录。
-- `/regen` 或 `/regenerate` - 重新生成上一次的回复。
-- `/exit` 或 `/bye` - 退出程序。
-- `/help` 或 `/?` - 显示帮助信息。
-
-### 聊天
-输入您想发送给智能体的消息。**在发送消息之前，您需要使用 `/load` 加载一个智能体。**
-
-如果您想发送多行消息，请使用 `Tab` 来换行。`Enter` 键将发送消息。
 
 ### 聊天记录
 聊天记录会自动保存在 `agent` 文件夹下，文件名为 `history.json`。
