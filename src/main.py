@@ -55,12 +55,13 @@ def print_assistant_message(response: StreamedResponse):
 
     :param StreamedResponse response: the streamed response object containing the assistant's response and thoughts.
     """
+
     # Initialize variables for storing thoughts and responses
     reasoning_resposne = ""
     assistant_response = ""
 
     # Create an empty placeholder for displaying messages
-    message_placeholder = st.chat_message("assistant").empty()
+    message_placeholder = st.empty()
     is_inside_think_tag = False
 
     # Iterate over each chunk in the response
@@ -119,8 +120,9 @@ def main_loop():
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        response = st.session_state.agent.chat(prompt)
-        print_assistant_message(response)
+        with st.chat_message("assistant"):
+            response = st.session_state.agent.chat(prompt)
+            print_assistant_message(response)
 
 
 if st.session_state.agent:
