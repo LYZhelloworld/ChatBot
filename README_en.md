@@ -22,12 +22,12 @@ Run container:
 
 ```bash
 # Linux or Mac OS X
-docker run -v "./src/agents:/app/src/agents" -it --rm chatbot
+docker run -v "./src/agents:/app/src/agents" -it --rm --network host chatbot
 ```
 
 ```powershell
 # Windows
-docker run -v ".\src\agents:/app/src/agents" -it --rm chatbot
+docker run -v ".\src\agents:/app/src/agents" -it --rm --network host chatbot
 ```
 
 ### Without Docker

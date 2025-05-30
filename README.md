@@ -22,12 +22,12 @@ docker build -t chatbot .
 
 ```bash
 # Linux 或 Mac OS X
-docker run -v "./src/agents:/app/src/agents" -it --rm chatbot
+docker run -v "./src/agents:/app/src/agents" -it --rm --network host chatbot
 ```
 
 ```powershell
 # Windows
-docker run -v ".\src\agents:/app/src/agents" -it --rm chatbot
+docker run -v ".\src\agents:/app/src/agents" -it --rm --network host chatbot
 ```
 
 ### 不使用 Docker
