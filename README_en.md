@@ -21,13 +21,14 @@ docker build -t chatbot .
 Run container:
 
 ```bash
-# Linux or Mac OS X
 docker run -v "./src/agents:/app/src/agents" -it --rm --network host chatbot
 ```
 
-```powershell
-# Windows
-docker run -v ".\src\agents:/app/src/agents" -it --rm --network host chatbot
+If you have deployed Ollama server with Docker, and created a network (e.g., `ollama`):
+
+```bash
+docker run -v "./src/agents:/app/src/agents" -it --rm -p 8501:8501 --network ollama chatbot
+# Remember to set `baseURL` to `http://ollama:11434/v1` in your agent config file.
 ```
 
 ### Without Docker
@@ -42,13 +43,7 @@ pip install uv
 
 If you don't have `pip` installed, you can install `uv` using the following command:
 
-```powershell
-# Windows
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
 ```bash
-# Linux or Mac OS X
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
@@ -78,39 +73,9 @@ uv sync
 1. Create a file `system.md` in the directory with any agent prompts.
 
 ## How to Use
-Run with Python environment:
-
-```powershell
-uv run src/main.py
+```bash
+uv run streamlit run src/main.py
 ```
-
-If you want to load an agent at startup, you can pass the agent name as an argument:
-
-```powershell
-uv run src/main.py my-agent
-```
-
-Build an executable file:
-
-```powershell
-pyinstaller --onefile --console --distpath dist --name "ChatBot" -y src/main.py
-```
-
-The executable file will be generated in the `dist` folder.
-
-### Commands
-Available commands:
-- `/list` - List available agents.
-- `/load <agent-name>` - Load an agent. The `<agent-name>` is the folder name under `agents` folder.
-- `/history` - Show the history of the current agent.
-- `/regen` or `/regenerate` - Regenerate the last response.
-- `/exit` or `/bye` - Exit the program.
-- `/help` or `/?` - Show this help message.
-
-### Chat
-Type the message you want to send to the agent. **You need to use `/load` to load an agent first before sending.**
-
-Please press `Tab` key if you want to insert a newline to send multi-line messages. `Enter` key will send the message.
 
 ### Chat History
 Chat history is autosaved under the `agent` folder with the name `history.json`.

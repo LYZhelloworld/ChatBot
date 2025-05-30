@@ -15,5 +15,7 @@ RUN pip install uv
 RUN uv venv
 RUN uv sync
 
+EXPOSE 8501
+
 # Run
-CMD ["uv", "run", "src/main.py"]
+CMD ["uv", "run", "streamlit", "run", "src/main.py"]
