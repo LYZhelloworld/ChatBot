@@ -8,13 +8,10 @@ from langchain_ollama import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, trim_messages
 
-from chatbot.chat_history_loader import load_chat_history
 from chatbot.types import StreamedResponse
 from emotion.emotion import Emotion, DEFAULT_EMOTION
 from utils.utils import remove_think_tags
-from .types import AgentConfig, ChatHistoryV1, ModelParams, PromptSchema
-from .validators.validator import validate
-from .validators.agent_config import schema as agent_config_schema
+from .types import AgentConfig, ChatHistoryV1, PromptSchema
 from .prompts import system_prompt, agent_description_prompt, user_description_prompt
 
 
@@ -45,29 +42,26 @@ class Agent:
             )
 
         with open(config_file_path, "r", encoding="utf-8") as file:
-            config_file_content: AgentConfig = validate(
-                json.load(file), agent_config_schema)
+            agent_config = AgentConfig(**json.load(file))
 
         # Load agent configuration from config file.
-        self.__model: str = config_file_content.get("model")
-        self.__model_params: ModelParams = config_file_content.get(
-            "modelParams", ModelParams())
-        self.__history_limit: int = config_file_content.get("historyLimit", 20)
-        self.__history: ChatHistoryV1 = {"version": "v1", "history": []}
+        self.__model = agent_config.model
+        self.__model_params = agent_config.modelParams
+        self.__history_limit = agent_config.historyLimit
+        self.__history = ChatHistoryV1(version="v1", history=[])
 
         # Load description from config file.
-        self.__agent_description: str = self.__load_description(
-            config_file_content.get("agentDescription"))
-        self.__user_description: str = self.__load_description(
-            config_file_content.get("userDescription"))
+        self.__agent_description = self.__load_description(
+            agent_config.agentDescription)
+        self.__user_description = self.__load_description(
+            agent_config.userDescription)
 
-        # Create Ollama client with the provided API key and base URL.
+        # Create Ollama client with the provided base URL.
         self.__client = OllamaLLM(
-            base_url=config_file_content.get(
-                "baseURL", "http://ollama:11434/"),
-            model=config_file_content.get("model"),
-            temperature=self.__model_params.get("temperature"),
-            top_p=self.__model_params.get("top_p"),
+            base_url=agent_config.baseURL,
+            model=agent_config.model,
+            temperature=self.__model_params.temperature,
+            top_p=self.__model_params.top_p,
         )
 
         # Load or create history file.
@@ -83,7 +77,7 @@ class Agent:
                 print("Cannot load history file. History will be empty.")
 
         # Create emotion instance.
-        self.__emotion: Emotion = Emotion(self.__model, config_file_content)
+        self.__emotion: Emotion = Emotion(self.__model, agent_config)
 
     @property
     def name(self) -> str:
@@ -185,22 +179,20 @@ class Agent:
             emotion_value=emotion,
         )
 
-    def __load_description(self, prompt: PromptSchema | None) -> str:
+    def __load_description(self, prompt: PromptSchema) -> str:
         """
         Loads the description prompt from a file or uses the provided text.
 
-        :param PromptSchema, optional prompt: The description prompt.
+        :param PromptSchema: The description prompt.
         :return: The loaded system prompt.
         :rtype: str
         """
-        if prompt is None:
-            return ""
 
-        if prompt["type"] == "file":
-            with open(os.path.join(Agent.__AGENT_FOLDER, self.name, prompt["path"]), "r", encoding="utf-8") as file:
+        if prompt.type == "file":
+            with open(os.path.join(Agent.__AGENT_FOLDER, self.name, prompt.path), "r", encoding="utf-8") as file:
                 return file.read().strip()
-        elif prompt["type"] == "text":
-            return prompt["content"].strip()
+        elif prompt.type == "text":
+            return prompt.content.strip()
         else:
             return ""
 
@@ -211,7 +203,8 @@ class Agent:
         :param str path: The path to the chat history file.
         """
         try:
-            self.__history = load_chat_history(path)
+            with open(path, "r", encoding="utf-8") as file:
+                self.__history = ChatHistoryV1(**json.load(file))
             self.save()
         except Exception as e:
             print(f"Warning: {str(e)}\n{traceback.format_exc()}")

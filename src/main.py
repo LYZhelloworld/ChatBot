@@ -102,7 +102,7 @@ def main_loop():
     # Load history when loading the page.
     if not st.session_state.messages:
         history = st.session_state.agent.history()
-        for item in history["history"]:
+        for item in history.history:
             st.session_state.messages.append(
                 {"role": "user", "content": item["user_message"]})
             st.session_state.messages.append(
