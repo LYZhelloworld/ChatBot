@@ -4,31 +4,22 @@
 ChatBot is an interactive chatting tool with local deployed LLM.
 
 ## Prerequisites
-This tool is based on OpenAI API model.
-
-Consider installing [Ollama](https://ollama.com) if you want to run LLM locally. Otherwise, please provide an API token in the configuration file.
+This tool uses Ollama to run LLM locally.
 
 ## Environment Setup
 
 ### With Docker
 
-Create container:
+Build and run container:
 
 ```bash
-docker build -t chatbot .
+docker-compose up -d
 ```
 
-Run container:
+Stop container:
 
 ```bash
-docker run -v "./src/agents:/app/src/agents" -it --rm --network host chatbot
-```
-
-If you have deployed Ollama server with Docker, and created a network (e.g., `ollama`):
-
-```bash
-docker run -v "./src/agents:/app/src/agents" -it --rm -p 8501:8501 --network ollama chatbot
-# Remember to set `baseURL` to `http://ollama:11434/v1` in your agent config file.
+docker-compose down
 ```
 
 ### Without Docker
@@ -47,11 +38,16 @@ If you don't have `pip` installed, you can install `uv` using the following comm
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Create the virtual environment and download requirements.
+Create virtual environment and install dependencies.
 
 ```bash
 uv venv
 uv sync
+```
+
+Run:
+```bash
+uv run streamlit run src/main.py
 ```
 
 ## Create An Agent
@@ -71,11 +67,6 @@ uv sync
     }
     ```
 1. Create a file `system.md` in the directory with any agent prompts.
-
-## How to Use
-```bash
-uv run streamlit run src/main.py
-```
 
 ### Chat History
 Chat history is autosaved under the `agent` folder with the name `history.json`.

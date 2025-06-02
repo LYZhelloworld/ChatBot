@@ -4,31 +4,22 @@
 ChatBot 是一个基于本地部署 LLM 的交互式聊天工具。
 
 ## 前置条件
-此工具基于 OpenAI API 模型。
-
-如果希望本地运行 LLM，可以考虑安装 [Ollama](https://ollama.com)，否则请在配置文件中提供 API 密钥。
+此工具使用 Ollama 来本地运行 LLM。
 
 ## 环境设置
 
 ### 使用 Docker
 
-构建容器：
+构建和运行容器：
 
 ```bash
-docker build -t chatbot .
+docker-compose up -d
 ```
 
-运行容器：
+停止容器：
 
 ```bash
-docker run -v "./src/agents:/app/src/agents" -it --rm -p 8501:8501 chatbot
-```
-
-如果你使用的是 Docker 上部署的 Ollama 服务器，并且创建了一个网络（假设名为 `ollama`）：
-
-```bash
-docker run -v "./src/agents:/app/src/agents" -it --rm -p 8501:8501 --network ollama chatbot
-# 记得在 Agent 文件中设置 `baseURL` 为 `http://ollama:11434/v1`
+docker-compose down
 ```
 
 ### 不使用 Docker
@@ -54,6 +45,11 @@ uv venv
 uv sync
 ```
 
+运行：
+```bash
+uv run streamlit run src/main.py
+```
+
 ## 创建智能体
 1. 在 `src` 文件夹下创建一个名为 `agents` 的文件夹（如果不存在的话）。
     - 如果运行的是可执行文件，请在可执行文件所在目录下创建 `agents` 文件夹。
@@ -71,11 +67,6 @@ uv sync
     }
     ```
 1. 在该目录下创建一个名为 `system.md` 的文件，用于存放智能体提示词。
-
-## 使用方法
-```bash
-uv run streamlit run src/main.py
-```
 
 ### 聊天记录
 聊天记录会自动保存在 `agent` 文件夹下，文件名为 `history.json`。
