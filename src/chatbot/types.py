@@ -74,10 +74,7 @@ class AgentConfig(BaseModel):
 
     model: str
     baseURL: str = "http://ollama:11434/"
-    agentDescription: PromptSchema = Field(
-        default_factory=lambda: PromptText(type="text", content=""))
-    userDescription: PromptSchema = Field(
-        default_factory=lambda: PromptText(type="text", content=""))
+    agentDescription: PromptSchema = Field(default_factory=lambda: PromptText(type="text", content=""))
+    userDescription: PromptSchema = Field(default_factory=lambda: PromptText(type="text", content=""))
     historyLimit: int = 20  # Optional, default is 20
-    modelParams: ModelParams = Field(
-        default_factory=lambda: ModelParams())
+    modelParams: ModelParams = Field(default_factory=lambda: ModelParams())

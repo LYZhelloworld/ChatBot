@@ -37,9 +37,7 @@ class Agent:
         config_file_path = os.path.join(
             Agent.__AGENT_FOLDER, name, self.__CONFIG_FILE_NAME)
         if not os.path.isfile(config_file_path):
-            raise FileNotFoundError(
-                f"Agent '{self.name}' does not exist. Please create a config file at '{config_file_path}'."
-            )
+            raise FileNotFoundError(f"Agent '{self.name}' does not exist. Please create a config file at '{config_file_path}'.")
 
         with open(config_file_path, "r", encoding="utf-8") as file:
             agent_config = AgentConfig(**json.load(file))
@@ -51,10 +49,8 @@ class Agent:
         self.__history = ChatHistoryV1(version="v1", history=[])
 
         # Load description from config file.
-        self.__agent_description = self.__load_description(
-            agent_config.agentDescription)
-        self.__user_description = self.__load_description(
-            agent_config.userDescription)
+        self.__agent_description = self.__load_description(agent_config.agentDescription)
+        self.__user_description = self.__load_description(agent_config.userDescription)
 
         # Create Ollama client with the provided base URL.
         self.__client = OllamaLLM(
@@ -65,8 +61,7 @@ class Agent:
         )
 
         # Load or create history file.
-        history_file_path = os.path.join(os.path.dirname(
-            config_file_path), Agent.__HISTORY_FILE_NAME)
+        history_file_path = os.path.join(os.path.dirname(config_file_path), Agent.__HISTORY_FILE_NAME)
         if not os.path.exists(history_file_path):
             self.save()
         else:
@@ -101,8 +96,7 @@ class Agent:
             return []
 
         if not os.path.isdir(Agent.__AGENT_FOLDER):
-            raise NotADirectoryError(
-                f"Agent folder '{Agent.__AGENT_FOLDER}' is not a directory.")
+            raise NotADirectoryError(f"Agent folder '{Agent.__AGENT_FOLDER}' is not a directory.")
 
         return [f for f in os.listdir(Agent.__AGENT_FOLDER) if os.path.isdir(os.path.join(Agent.__AGENT_FOLDER, f))]
 
@@ -151,8 +145,7 @@ class Agent:
         """
         Saves the current chat history to a file.
         """
-        history_file_path = os.path.join(
-            Agent.__AGENT_FOLDER, self.name, Agent.__HISTORY_FILE_NAME)
+        history_file_path = os.path.join(Agent.__AGENT_FOLDER, self.name, Agent.__HISTORY_FILE_NAME)
         with open(history_file_path, "w", encoding="utf-8") as file:
             json.dump(self.__history, file, indent=2, ensure_ascii=False)
 
@@ -172,10 +165,8 @@ class Agent:
             emotion = DEFAULT_EMOTION
 
         return Agent.__SYSTEM_PROMPT_TEMPLATE.format_messages(
-            agent_description=(agent_description_prompt.format(
-                prompt=self.__agent_description) if self.__agent_description else ""),
-            user_description=(user_description_prompt.format(
-                prompt=self.__user_description) if self.__user_description else ""),
+            agent_description=(agent_description_prompt.format(prompt=self.__agent_description) if self.__agent_description else ""),
+            user_description=(user_description_prompt.format(prompt=self.__user_description) if self.__user_description else ""),
             emotion_value=emotion,
         )
 

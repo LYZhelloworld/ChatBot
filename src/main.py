@@ -78,8 +78,7 @@ def print_assistant_message(response: StreamedResponse):
         if is_inside_think_tag:
             reasoning_resposne += chunk
             # Update the placeholder to show the assistant's current thought process
-            message_placeholder.markdown(
-                f'<details><summary>Thinking</summary>{reasoning_resposne}</details>', unsafe_allow_html=True)
+            message_placeholder.markdown(f'<details><summary>Thinking</summary>{reasoning_resposne}</details>', unsafe_allow_html=True)
         else:
             assistant_response += chunk
             # Update the placeholder to show the assistant's current thought process and response
@@ -87,8 +86,7 @@ def print_assistant_message(response: StreamedResponse):
                 f'<details><summary>Thinking</summary>{reasoning_resposne}</details>{assistant_response}', unsafe_allow_html=True)
 
     # Add the assistant's response to the session state messages list
-    st.session_state.messages.append(
-        {"role": "assistant", "content": assistant_response})
+    st.session_state.messages.append({"role": "assistant", "content": assistant_response})
 
 
 def main_loop():
@@ -103,10 +101,8 @@ def main_loop():
     if not st.session_state.messages:
         history = st.session_state.agent.history()
         for item in history.history:
-            st.session_state.messages.append(
-                {"role": "user", "content": item["user_message"]})
-            st.session_state.messages.append(
-                {"role": "assistant", "content": item["assistant_message"]})
+            st.session_state.messages.append({"role": "user", "content": item["user_message"]})
+            st.session_state.messages.append({"role": "assistant", "content": item["assistant_message"]})
 
     # Render all messages.
     for message in st.session_state.messages:

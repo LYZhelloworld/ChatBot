@@ -21,8 +21,7 @@ class Emotion:
     __HISTORY_LIMIT = 10
     __EMOTION_MIN = -100
     __EMOTION_MAX = 100
-    __CHAT_HISTORY_ITEM_TEMPLATE = ChatPromptTemplate.from_template(
-        chat_history_item)
+    __CHAT_HISTORY_ITEM_TEMPLATE = ChatPromptTemplate.from_template(chat_history_item)
 
     def __init__(self, model: str, config: AgentConfig):
         """
@@ -56,13 +55,12 @@ class Emotion:
         messages: list[BaseMessage] = [SystemMessage(content=system_prompt)]
         for item in history:
             messages.append(Emotion.__CHAT_HISTORY_ITEM_TEMPLATE.format_messages(
-                user_message=item["user_message"], assistant_message=item["assistant_message"]))
+                user_message=item["user_message"],
+                assistant_message=item["assistant_message"]),
+            )
             messages.append(AIMessage(content=str(item["emotion"])))
 
-        messages.append(Emotion.__CHAT_HISTORY_ITEM_TEMPLATE.format_messages(
-            user_message=user,
-            assistant_message=assistant,
-        ))
+        messages.append(Emotion.__CHAT_HISTORY_ITEM_TEMPLATE.format_messages(user_message=user, assistant_message=assistant))
 
         trim_messages(
             messages,
@@ -80,7 +78,6 @@ class Emotion:
         try:
             emotion = int(remove_think_tags(response))
         except ValueError:
-            emotion = history[-1]["emotion"] if len(
-                history) > 0 else DEFAULT_EMOTION
+            emotion = history[-1]["emotion"] if len(history) > 0 else DEFAULT_EMOTION
 
         return max(Emotion.__EMOTION_MIN, min(Emotion.__EMOTION_MAX, emotion))
