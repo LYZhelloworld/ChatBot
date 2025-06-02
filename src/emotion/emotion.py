@@ -1,5 +1,7 @@
-from openai import OpenAI
-from openai.types.chat import ChatCompletionMessageParam
+from langchain_ollama import OllamaLLM
+from langchain_community.llms.ollama import Ollama
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import BaseMessage, AIMessage, SystemMessage, trim_messages
 
 from chatbot.types import ChatHistoryV1Item
 from utils.utils import remove_think_tags
@@ -17,12 +19,13 @@ class Emotion:
     """
 
     __TEMPERATURE = 0.0
-    __MAX_TOKENS = 2048
     __HISTORY_LIMIT = 10
     __EMOTION_MIN = -100
     __EMOTION_MAX = 100
+    __CHAT_HISTORY_ITEM_TEMPLATE = ChatPromptTemplate.from_template(
+        chat_history_item)
 
-    def __init__(self, model: str, base_url: str, api_key: str):
+    def __init__(self, model: str, base_url: str):
         """
         Initializes the Emotion instance.
 
@@ -31,10 +34,10 @@ class Emotion:
         :param str api_key: The API key for authentication.
         """
 
-        self.__model: str = model
-        self.__client: OpenAI = OpenAI(
-            api_key=api_key,
-            base_url=base_url
+        self.__client = OllamaLLM(
+            base_url=base_url,
+            model=model,
+            temperature=Emotion.__TEMPERATURE,
         )
 
     def get(self, history: list[ChatHistoryV1Item], user: str, assistant: str) -> int:
@@ -54,32 +57,32 @@ class Emotion:
         if len(history) == 0:
             return DEFAULT_EMOTION
 
-        messages: list[ChatCompletionMessageParam] = []
-        messages.append({"role": "system", "content": system_prompt})
+        messages: list[BaseMessage] = [SystemMessage(content=system_prompt)]
         for item in history:
-            messages.append({"role": "user", "content": chat_history_item.format(
-                user_message=item["user_message"],
-                assistant_message=item["assistant_message"],
-            )})
-            messages.append(
-                {"role": "assistant", "content": str(item["emotion"])})
+            messages.append(Emotion.__CHAT_HISTORY_ITEM_TEMPLATE.format_messages(
+                user_message=item["user_message"], assistant_message=item["assistant_message"]))
+            messages.append(AIMessage(content=str(item["emotion"])))
 
-        messages.append({"role": "user", "content": chat_history_item.format(
+        messages.append(Emotion.__CHAT_HISTORY_ITEM_TEMPLATE.format_messages(
             user_message=user,
             assistant_message=assistant,
-        )})
+        ))
 
-        response = self.__client.chat.completions.create(
-            model=self.__model,
-            messages=messages,
-            temperature=Emotion.__TEMPERATURE,
-            max_completion_tokens=Emotion.__MAX_TOKENS,
-            stream=False,
+        trim_messages(
+            messages,
+            strategy="last",
+            token_counter=len,
+            max_tokens=Emotion.__HISTORY_LIMIT,
+            start_on="human",
+            end_on="human",
+            include_system=True,
+            allow_partial=False
         )
 
+        response = self.__client.invoke(messages)
+
         try:
-            emotion = int(remove_think_tags(
-                response.choices[0].message.content.strip()))
+            emotion = int(remove_think_tags(response))
         except ValueError:
             emotion = history[-1]["emotion"] if len(
                 history) > 0 else DEFAULT_EMOTION
