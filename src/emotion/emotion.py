@@ -34,7 +34,7 @@ class Emotion:
         """
 
         self.__client = OllamaLLM(
-            base_url=config.get("baseURL", "http://ollama:11434/"),
+            base_url=config.baseURL,
             model=model,
             temperature=Emotion.__TEMPERATURE,
         )

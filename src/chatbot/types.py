@@ -1,9 +1,6 @@
-from typing import Generator, Literal, TypedDict, Union
+from typing import Generator, Literal, TypedDict, Union, Optional
 
-
-class ChatHistoryV0Item(TypedDict):
-    role: Literal["user", "assistant"]
-    content: str
+from pydantic import BaseModel, Field
 
 
 class ChatHistoryV1Item(TypedDict):
@@ -12,7 +9,7 @@ class ChatHistoryV1Item(TypedDict):
     emotion: int
 
 
-class ChatHistoryV1(TypedDict):
+class ChatHistoryV1(BaseModel):
     version: Literal["v1"]
     history: list[ChatHistoryV1Item]
 
@@ -20,7 +17,7 @@ class ChatHistoryV1(TypedDict):
 type StreamedResponse = Generator[str, None, None]
 
 
-class PromptFile(TypedDict):
+class PromptFile(BaseModel):
     """
     Represents a system prompt provided as a file.
 
@@ -33,7 +30,7 @@ class PromptFile(TypedDict):
     path: str
 
 
-class PromptText(TypedDict):
+class PromptText(BaseModel):
     """
     Represents a system prompt provided as a text string.
 
@@ -49,7 +46,7 @@ class PromptText(TypedDict):
 type PromptSchema = Union[PromptFile, PromptText]
 
 
-class ModelParams(TypedDict, total=False):
+class ModelParams(BaseModel):
     """
     The parameters passed to the model.
 
@@ -58,18 +55,17 @@ class ModelParams(TypedDict, total=False):
         top_p (float, optional): An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
     """
 
-    temperature: float | None
-    top_p: float | None
+    temperature: Optional[float] = None
+    top_p: Optional[float] = None
 
 
-class AgentConfig(TypedDict, total=False):
+class AgentConfig(BaseModel):
     """
     Represents the configuration for an agent.
 
     Attributes:
         model (str): The model used by the agent.
-        baseURL (str): The URL of the LLM server API.
-        apiKey (str): The API key used by the LLM server.
+        baseURL (str): The URL of the LLM server API. Leave it empty if you are using Docker deployment.
         agentDescription (PromptSchema, optional): The prompt to be used by the agent. It can be either a file or a text string.
         userDescription (PromptSchema, optional): The prompt to be used by the user. It can be either a file or a text string.
         historyLimit (int, optional): The maximum number of history records to be used as the context. Default is 20. Note that one pair of user-assistant chat history is counted as one record.
@@ -77,9 +73,11 @@ class AgentConfig(TypedDict, total=False):
     """
 
     model: str
-    baseURL: str
-    apiKey: str
-    agentDescription: PromptSchema | None
-    userDescription: PromptSchema | None
-    historyLimit: int | None  # Optional, default is 20
-    modelParams: ModelParams | None
+    baseURL: str = "http://ollama:11434/"
+    agentDescription: PromptSchema = Field(
+        default_factory=lambda: PromptText(type="text", content=""))
+    userDescription: PromptSchema = Field(
+        default_factory=lambda: PromptText(type="text", content=""))
+    historyLimit: int = 20  # Optional, default is 20
+    modelParams: ModelParams = Field(
+        default_factory=lambda: ModelParams())
