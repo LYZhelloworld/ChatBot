@@ -6,9 +6,6 @@ from chatbot.types import StreamedResponse
 # Initialize session states
 # Initialize an empty list to store messages
 st.session_state.messages = []
-# Check if the selected_agent key exists in the session state, if not, initialize it as an empty string
-if "selected_agent" not in st.session_state:
-    st.session_state.selected_agent = ""
 # Check if the agent key exists in the session state, if not, initialize it as None
 if "agent" not in st.session_state:
     st.session_state.agent = None
@@ -40,9 +37,9 @@ with st.sidebar:
     selected_agent = st.selectbox("Select an agent:", agents)
 
     # Handle the selection of an agent or the reset to default state
-    if selected_agent == "":
-        st.session_state.selected_agent = None
-    elif selected_agent != st.session_state.selected_agent:
+    if not selected_agent:
+        st.session_state.agent = None
+    elif st.session_state.agent is None or st.session_state.agent.name != selected_agent:
         st.session_state.agent = Agent(selected_agent)
 
 

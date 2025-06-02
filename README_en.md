@@ -57,7 +57,7 @@ uv run streamlit run src/main.py
 1. Add a configuration file in your agent folder with the name `config.json`. Below is an example:
     ```json
     {
-      "model": "qwen2.5-7b",
+      "model": "qwen2.5:7b",
       "agentDescription": {
         "type": "file",
         "path": "system.md"

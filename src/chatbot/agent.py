@@ -7,6 +7,7 @@ from typing import Iterator
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, trim_messages
+from ollama import Client
 
 from chatbot.types import StreamedResponse
 from emotion.emotion import Emotion, DEFAULT_EMOTION
@@ -41,6 +42,9 @@ class Agent:
 
         with open(config_file_path, "r", encoding="utf-8") as file:
             agent_config = AgentConfig(**json.load(file))
+
+        # Check if the model is available.
+        self.__check_model_existence(agent_config)
 
         # Load agent configuration from config file.
         self.__model = agent_config.model
@@ -147,7 +151,7 @@ class Agent:
         """
         history_file_path = os.path.join(Agent.__AGENT_FOLDER, self.name, Agent.__HISTORY_FILE_NAME)
         with open(history_file_path, "w", encoding="utf-8") as file:
-            json.dump(self.__history, file, indent=2, ensure_ascii=False)
+            json.dump(self.__history.model_dump(), file, indent=2, ensure_ascii=False)
 
     def __get_system_prompt(self) -> list[BaseMessage]:
         """
@@ -252,3 +256,21 @@ class Agent:
         :rtype: int
         """
         return self.__emotion.get(self.__history["history"], user, assistant)
+
+    def __check_model_existence(self, agent_config: AgentConfig):
+        """Check if the specified model exists in Ollama service, trigger download if not.
+
+        :param AgentConfig agent_config: Configuration object containing Ollama server URL and model name
+        """
+        # Create Ollama client instance
+        client = Client(host=agent_config.baseURL)
+        # Get list of models currently loaded in the server
+        models = client.list()
+        required_model = agent_config.model
+
+        # Check if required model exists in server's model list
+        if any(model.model == required_model for model in models.models):
+            return
+
+        # Trigger model download process
+        client.pull(model=required_model)

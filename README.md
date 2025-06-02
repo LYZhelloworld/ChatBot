@@ -57,7 +57,7 @@ uv run streamlit run src/main.py
 1. 在该文件夹中添加一个名为 `config.json` 的配置文件。例如：
     ```json
     {
-      "model": "qwen2.5-7b",
+      "model": "qwen2.5:7b",
       "agentDescription": {
         "type": "file",
         "path": "system.md"

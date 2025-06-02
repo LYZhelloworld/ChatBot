@@ -152,11 +152,12 @@ wheels = [
 
 [[package]]
 name = "chatbot"
-version = "1.2.0"
+version = "1.2.1"
 source = { virtual = "." }
 dependencies = [
     { name = "langchain" },
     { name = "langchain-ollama" },
+    { name = "ollama" },
     { name = "pydantic" },
     { name = "streamlit" },
 ]
@@ -165,6 +166,7 @@ dependencies = [
 requires-dist = [
     { name = "langchain", specifier = ">=0.3.25" },
     { name = "langchain-ollama", specifier = ">=0.3.3" },
+    { name = "ollama", specifier = ">=0.5.1" },
     { name = "pydantic", specifier = ">=2.11.3" },
     { name = "streamlit", specifier = ">=1.45.1" },
 ]
