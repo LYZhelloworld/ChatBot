@@ -245,7 +245,7 @@ class Agent:
 
         response_content = remove_think_tags(response_content)
         if response_content:
-            self.__history["history"].append({
+            self.__history.history.append({
                 "user_message": user_input,
                 "assistant_message": response_content,
                 "emotion": self.__get_new_emotion(user_input, response_content),
