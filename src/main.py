@@ -1,5 +1,7 @@
 import streamlit as st
 
+from langchain_core.messages import HumanMessage, AIMessage
+
 from chatbot.agent import Agent
 from chatbot.types import StreamedResponse
 
@@ -98,8 +100,10 @@ def main_loop():
     if not st.session_state.messages:
         history = st.session_state.agent.history()
         for item in history.history:
-            st.session_state.messages.append({"role": "user", "content": item["user_message"]})
-            st.session_state.messages.append({"role": "assistant", "content": item["assistant_message"]})
+            if isinstance(item, HumanMessage):
+                st.session_state.messages.append({"role": "user", "content": item.content})
+            elif isinstance(item, AIMessage):
+                st.session_state.messages.append({"role": "assistant", "content": item.content})
 
     # Render all messages.
     for message in st.session_state.messages:

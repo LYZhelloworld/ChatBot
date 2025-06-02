@@ -1,8 +1,9 @@
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.messages import BaseMessage, AIMessage, SystemMessage, trim_messages
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage, trim_messages
+from langchain_community.chat_message_histories import FileChatMessageHistory
 
-from chatbot.types import AgentConfig, ChatHistoryV1Item
+from chatbot.types import AgentConfig
 from utils.utils import remove_think_tags
 from .prompts import system_prompt, chat_history_item
 
@@ -38,7 +39,7 @@ class Emotion:
             temperature=Emotion.__TEMPERATURE,
         )
 
-    def get(self, history: list[ChatHistoryV1Item], user: str, assistant: str) -> int:
+    def get(self, history: FileChatMessageHistory, user: str, assistant: str) -> int:
         """
         Returns the current emotion value based on the history.
 
@@ -49,18 +50,22 @@ class Emotion:
         :rtype: int
         """
 
-        if len(history) == 0:
+        if len(history.messages) == 0:
             return DEFAULT_EMOTION
 
         messages: list[BaseMessage] = [SystemMessage(content=system_prompt)]
-        for item in history:
-            messages.append(Emotion.__CHAT_HISTORY_ITEM_TEMPLATE.format_messages(
-                user_message=item["user_message"],
-                assistant_message=item["assistant_message"]),
-            )
-            messages.append(AIMessage(content=str(item["emotion"])))
-
-        messages.append(Emotion.__CHAT_HISTORY_ITEM_TEMPLATE.format_messages(user_message=user, assistant_message=assistant))
+        user_message: HumanMessage
+        for message in history.messages:
+            if isinstance(message, HumanMessage):
+                user_message = message
+            elif isinstance(message, AIMessage):
+                messages.append(Emotion.__CHAT_HISTORY_ITEM_TEMPLATE.format_messages(
+                    user_message=user_message.content,
+                    assistant_message=message.content,
+                ))
+                emotion = message.additional_kwargs["emotion"]
+                emotion = emotion if emotion is not None else DEFAULT_EMOTION
+                messages.append(AIMessage(content=str(emotion)))
 
         trim_messages(
             messages,
@@ -68,16 +73,21 @@ class Emotion:
             token_counter=len,
             max_tokens=Emotion.__HISTORY_LIMIT,
             start_on="human",
-            end_on="human",
             include_system=True,
             allow_partial=False
         )
+
+        messages.append(Emotion.__CHAT_HISTORY_ITEM_TEMPLATE.format_messages(user_message=user, assistant_message=assistant))
 
         response = self.__client.invoke(messages)
 
         try:
             emotion = int(remove_think_tags(response))
         except ValueError:
-            emotion = history[-1]["emotion"] if len(history) > 0 else DEFAULT_EMOTION
+            if len(history.messages) == 0:
+                emotion = DEFAULT_EMOTION
+            else:
+                emotion = history.messages[-1].additional_kwargs["emotion"]
+                emotion = DEFAULT_EMOTION if emotion is None else emotion
 
         return max(Emotion.__EMOTION_MIN, min(Emotion.__EMOTION_MAX, emotion))
