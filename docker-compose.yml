@@ -1,0 +1,37 @@
+networks:
+  chatbot-net:
+    driver: bridge
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    networks:
+      - chatbot-net
+    volumes:
+      - ~/.ollama:/root/.ollama
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: -1
+              capabilities: ["gpu"]
+
+  chatbot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chatbot
+    ports:
+      - "8501:8501"
+    networks:
+      - chatbot-net
+    volumes:
+      - ./src/agents:/app/src/agents
+    depends_on:
+      - ollama
+    restart: unless-stopped

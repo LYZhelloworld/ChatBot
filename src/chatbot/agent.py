@@ -2,9 +2,11 @@ import os
 import json
 import sys
 import traceback
+from typing import Iterator
 
-from openai import OpenAI, Stream
-from openai.types.chat import ChatCompletionChunk
+from langchain_ollama import OllamaLLM
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, trim_messages
 
 from chatbot.chat_history_loader import load_chat_history
 from chatbot.types import StreamedResponse
@@ -24,6 +26,7 @@ class Agent:
     __AGENT_FOLDER = os.path.join(__BASE_PATH, "agents")
     __CONFIG_FILE_NAME = "config.json"
     __HISTORY_FILE_NAME = "history.json"
+    __SYSTEM_PROMPT_TEMPLATE = ChatPromptTemplate([('system', system_prompt)])
 
     def __init__(self, name: str):
         """
@@ -58,10 +61,13 @@ class Agent:
         self.__user_description: str = self.__load_description(
             config_file_content.get("userDescription"))
 
-        # Create OpenAI client with the provided API key and base URL.
-        self.__client: OpenAI = OpenAI(
-            api_key=config_file_content.get("apiKey"),
-            base_url=config_file_content.get("baseURL"),
+        # Create Ollama client with the provided API key and base URL.
+        self.__client = OllamaLLM(
+            base_url=config_file_content.get(
+                "baseURL", "http://ollama:11434/"),
+            model=config_file_content.get("model"),
+            temperature=self.__model_params.get("temperature"),
+            top_p=self.__model_params.get("top_p"),
         )
 
         # Load or create history file.
@@ -77,8 +83,7 @@ class Agent:
                 print("Cannot load history file. History will be empty.")
 
         # Create emotion instance.
-        self.__emotion: Emotion = Emotion(
-            self.__model, self.__client.base_url, config_file_content.get("apiKey"))
+        self.__emotion: Emotion = Emotion(self.__model, config_file_content)
 
     @property
     def name(self) -> str:
@@ -157,7 +162,7 @@ class Agent:
         with open(history_file_path, "w", encoding="utf-8") as file:
             json.dump(self.__history, file, indent=2, ensure_ascii=False)
 
-    def __get_system_prompt(self) -> str:
+    def __get_system_prompt(self) -> list[BaseMessage]:
         """
         Generates system prompt based on the user system prompt and the current emotion value.
 
@@ -172,7 +177,7 @@ class Agent:
             # If no history, use the default emotion value.
             emotion = DEFAULT_EMOTION
 
-        return system_prompt.format(
+        return Agent.__SYSTEM_PROMPT_TEMPLATE.format_messages(
             agent_description=(agent_description_prompt.format(
                 prompt=self.__agent_description) if self.__agent_description else ""),
             user_description=(user_description_prompt.format(
@@ -220,40 +225,30 @@ class Agent:
         :return: The response in stream.
         :rtype: StreamedResponse
         """
-        converted_history = []
-        for item in self.__history["history"][-self.__history_limit:]:
-            converted_history.append({
-                "role": "user",
-                "content": item["user_message"],
-            })
-            converted_history.append({
-                "role": "assistant",
-                "content": item["assistant_message"],
-            })
 
-        messages = [{"role": "system", "content": self.__get_system_prompt()}] + \
-            converted_history + \
-            [{"role": "user", "content": user_input}]
+        messages = self.__get_system_prompt()
+        for item in self.__history["history"]:
+            messages.append(HumanMessage(content=item["user_message"]))
+            messages.append(AIMessage(content=item["assistant_message"]))
+        messages.append(HumanMessage(content=user_input))
 
-        response: Stream[ChatCompletionChunk] = self.__client.chat.completions.create(
-            model=self.__model,
-            messages=messages,
-            stream=True,
-            frequency_penalty=self.__model_params.get("frequency_penalty"),
-            max_tokens=self.__model_params.get("max_tokens"),
-            presence_penalty=self.__model_params.get("presence_penalty"),
-            temperature=self.__model_params.get("temperature"),
-            top_p=self.__model_params.get("top_p"),
+        trim_messages(
+            messages,
+            strategy="last",
+            token_counter=len,
+            max_tokens=self.__history_limit,
+            start_on="human",
+            end_on="human",
+            include_system=True,
+            allow_partial=False
         )
+
+        response: Iterator[str] = self.__client.stream(messages)
 
         response_content = ""
         for chunk in response:
-            if chunk.choices[0].finish_reason == "stop":
-                break
-
-            content = chunk.choices[0].delta.content or ""
-            yield content
-            response_content += content
+            yield chunk
+            response_content += chunk
 
         response_content = remove_think_tags(response_content)
         if response_content:

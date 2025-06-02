@@ -4,31 +4,22 @@
 ChatBot is an interactive chatting tool with local deployed LLM.
 
 ## Prerequisites
-This tool is based on OpenAI API model.
-
-Consider installing [Ollama](https://ollama.com) if you want to run LLM locally. Otherwise, please provide an API token in the configuration file.
+This tool uses Ollama to run LLM locally.
 
 ## Environment Setup
 
 ### With Docker
 
-Create container:
+Build and run container:
 
 ```bash
-docker build -t chatbot .
+docker-compose up -d
 ```
 
-Run container:
+Stop container:
 
 ```bash
-docker run -v "./src/agents:/app/src/agents" -it --rm --network host chatbot
-```
-
-If you have deployed Ollama server with Docker, and created a network (e.g., `ollama`):
-
-```bash
-docker run -v "./src/agents:/app/src/agents" -it --rm -p 8501:8501 --network ollama chatbot
-# Remember to set `baseURL` to `http://ollama:11434/v1` in your agent config file.
+docker-compose down
 ```
 
 ### Without Docker
@@ -47,11 +38,16 @@ If you don't have `pip` installed, you can install `uv` using the following comm
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Create the virtual environment and download requirements.
+Create virtual environment and install dependencies.
 
 ```bash
 uv venv
 uv sync
+```
+
+Run:
+```bash
+uv run streamlit run src/main.py
 ```
 
 ## Create An Agent
@@ -62,8 +58,6 @@ uv sync
     ```json
     {
       "model": "qwen2.5-7b",
-      "baseURL": "http://localhost:11434/v1",
-      "apiKey": "ollama",
       "agentDescription": {
         "type": "file",
         "path": "system.md"
@@ -72,18 +66,12 @@ uv sync
     ```
 1. Create a file `system.md` in the directory with any agent prompts.
 
-## How to Use
-```bash
-uv run streamlit run src/main.py
-```
-
 ### Chat History
 Chat history is autosaved under the `agent` folder with the name `history.json`.
 
 ## Agent File Schema
 - `model`: The model used by the agent.
-- `baseURL`: The URL of the LLM server API.
-- `apiKey`: The API key used by the LLM server. Please provide an arbitrary API key if your server is hosted locally.
+- `baseURL`: The URL of the LLM server API. Leave it empty if you are using Docker deployment.
 - `agentDescription`: (Optional) The prompt to be used by the agent. It can be either a file or a text string.
     - If the `type` is `"file"`, please provide a `path` to the prompt file. The path is relative to the directory of the `config.json` file.
         ```json
@@ -105,8 +93,5 @@ Chat history is autosaved under the `agent` folder with the name `history.json`.
         ```
 - `userDescription`: (Optional) The prompt to be used by the user. It can be either a file or a text string. The format is similar to `agentDescription`.
 - `modelParams`: (Optional) The parameters passed to the model.
-    - `frequency_penalty`: (Optional) Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
-    - `max_tokens`: (Optional) The maximum number of tokens that can be generated in the chat completion. This value can be used to control costs for text generated via API.
-    - `presence_penalty`: (Optional) Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
     - `temperature`: (Optional) What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
     - `top_p`: (Optional) An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
