@@ -58,8 +58,6 @@ uv run streamlit run src/main.py
     ```json
     {
       "model": "qwen2.5-7b",
-      "baseURL": "http://localhost:11434/v1",
-      "apiKey": "ollama",
       "agentDescription": {
         "type": "file",
         "path": "system.md"
@@ -73,8 +71,7 @@ uv run streamlit run src/main.py
 
 ## 智能体文件结构
 - `model`: 智能体使用的模型。
-- `baseURL`: LLM 服务器 API 的 URL。
-- `apiKey`: LLM 服务器使用的 API 密钥。如果服务器是本地托管的，请提供任意 API 密钥。
+- `baseURL`: LLM 服务器 API 的 URL。如果你使用了 Docker 部署，留空即可。
 - `agentDescription`: （可选）智能体使用的提示词。可以是文件或文本字符串。
     - 如果 `type` 是 `"file"`，请提供提示文件的 `path`。路径是相对于 `config.json` 文件的目录。
         ```json
@@ -96,8 +93,5 @@ uv run streamlit run src/main.py
         ```
 - `userDescription`：（可选）用户使用的提示词。可以是文件或文本字符串。格式同 `agentDescription`。
 - `modelParams`：（可选）智能体使用模型的参数。
-    - `frequency_penalty`：（可选）在-2.0到2.0之间的数值。正值会根据新 token 在已有文本中的出现频率进行惩罚，降低模型逐字重复相同内容的可能性。
-    - `max_tokens`：（可选）聊天补全生成的最大 token 数量。此参数可用于控制通过 API 生成文本的成本。
-    - `presence_penalty`：（可选）在-2.0到2.0之间的数值。正值会根据新token是否已出现在文本中进行惩罚，增加模型转向新话题的可能性。
     - `temperature`：（可选）采样温度值，范围0到2。较高值（如0.8）会使输出更随机，较低值（如0.2）会使输出更专注且确定。
     - `top_p`：（可选）称为核采样的替代采样方式，模型会基于概率分布考虑结果。仅生成概率总和达到该阈值的最可能 token 组合（例如 top_p=0.9 时，模型会动态选择概率总和达 90% 的候选 token）。

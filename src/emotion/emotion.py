@@ -1,9 +1,8 @@
 from langchain_ollama import OllamaLLM
-from langchain_community.llms.ollama import Ollama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import BaseMessage, AIMessage, SystemMessage, trim_messages
 
-from chatbot.types import ChatHistoryV1Item
+from chatbot.types import AgentConfig, ChatHistoryV1Item
 from utils.utils import remove_think_tags
 from .prompts import system_prompt, chat_history_item
 
@@ -25,7 +24,7 @@ class Emotion:
     __CHAT_HISTORY_ITEM_TEMPLATE = ChatPromptTemplate.from_template(
         chat_history_item)
 
-    def __init__(self, model: str, base_url: str):
+    def __init__(self, model: str, config: AgentConfig):
         """
         Initializes the Emotion instance.
 
@@ -35,7 +34,7 @@ class Emotion:
         """
 
         self.__client = OllamaLLM(
-            base_url=base_url,
+            base_url=config.get("baseURL", "http://ollama:11434/"),
             model=model,
             temperature=Emotion.__TEMPERATURE,
         )
@@ -50,9 +49,6 @@ class Emotion:
         :return: The current emotion value.
         :rtype: int
         """
-
-        if len(history) > Emotion.__HISTORY_LIMIT:
-            history = history[-Emotion.__HISTORY_LIMIT:]
 
         if len(history) == 0:
             return DEFAULT_EMOTION

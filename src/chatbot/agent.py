@@ -63,7 +63,8 @@ class Agent:
 
         # Create Ollama client with the provided API key and base URL.
         self.__client = OllamaLLM(
-            base_url=config_file_content.get("baseURL"),
+            base_url=config_file_content.get(
+                "baseURL", "http://ollama:11434/"),
             model=config_file_content.get("model"),
             temperature=self.__model_params.get("temperature"),
             top_p=self.__model_params.get("top_p"),
@@ -82,8 +83,7 @@ class Agent:
                 print("Cannot load history file. History will be empty.")
 
         # Create emotion instance.
-        self.__emotion: Emotion = Emotion(
-            self.__model, config_file_content.get("baseURL"))
+        self.__emotion: Emotion = Emotion(self.__model, config_file_content)
 
     @property
     def name(self) -> str:
