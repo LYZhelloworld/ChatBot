@@ -1,17 +1,6 @@
-from typing import Generator, Literal, TypedDict, Union, Optional
+from typing import Generator, Literal, Union, Optional
 
 from pydantic import BaseModel, Field
-
-
-class ChatHistoryV1Item(TypedDict):
-    user_message: str
-    assistant_message: str
-    emotion: int
-
-
-class ChatHistoryV1(BaseModel):
-    version: Literal["v1"]
-    history: list[ChatHistoryV1Item]
 
 
 type StreamedResponse = Generator[str, None, None]

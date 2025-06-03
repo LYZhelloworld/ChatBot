@@ -1,7 +1,11 @@
 import streamlit as st
 
+from langchain_core.messages import HumanMessage, AIMessage
+
 from chatbot.agent import Agent
 from chatbot.types import StreamedResponse
+
+st.set_page_config(page_title="ChatBot")
 
 # Initialize session states
 # Initialize an empty list to store messages
@@ -92,14 +96,20 @@ def main_loop():
     This function is responsible for displaying the chat history, rendering messages, and processing user input.
     """
     # Set the title of the chat interface to the name of the agent.
+    if not st.session_state.agent:
+        st.title("Please select an agent.")
+        return
+
     st.title(st.session_state.agent.name)
 
     # Load history when loading the page.
     if not st.session_state.messages:
         history = st.session_state.agent.history()
-        for item in history.history:
-            st.session_state.messages.append({"role": "user", "content": item["user_message"]})
-            st.session_state.messages.append({"role": "assistant", "content": item["assistant_message"]})
+        for item in history:
+            if isinstance(item, HumanMessage):
+                st.session_state.messages.append({"role": "user", "content": item.content})
+            elif isinstance(item, AIMessage):
+                st.session_state.messages.append({"role": "assistant", "content": item.content})
 
     # Render all messages.
     for message in st.session_state.messages:
@@ -118,7 +128,4 @@ def main_loop():
             print_assistant_message(response)
 
 
-if st.session_state.agent:
-    main_loop()
-else:
-    st.title("Please select an agent.")
+main_loop()
