@@ -58,7 +58,7 @@ uv run streamlit run src/main.py
     ```json
     {
       "model": "qwen2.5:7b",
-      "agentDescription": {
+      "instructions": {
         "type": "file",
         "path": "system.md"
       }
@@ -72,11 +72,11 @@ uv run streamlit run src/main.py
 ## 智能体文件结构
 - `model`: 智能体使用的模型。
 - `baseURL`: LLM 服务器 API 的 URL。如果你使用了 Docker 部署，留空即可。
-- `agentDescription`: （可选）智能体使用的提示词。可以是文件或文本字符串。
+- `instructions`: 智能体使用的提示词。可以是文件或文本字符串。
     - 如果 `type` 是 `"file"`，请提供提示文件的 `path`。路径是相对于 `config.json` 文件的目录。
         ```json
         {
-          "agentDescription": {
+          "instructions": {
             "type": "file",
             "path": "system.md"
           }
@@ -85,13 +85,12 @@ uv run streamlit run src/main.py
     - 如果 `type` 是 `"text"`，请直接在 `content` 字段中提供提示词。
         ```json
         {
-          "agentDescription": {
+          "instructions": {
             "type": "text",
             "content": "你是一个 AI 助手，用于回答用户问题。"
           }
         }
         ```
-- `userDescription`：（可选）用户使用的提示词。可以是文件或文本字符串。格式同 `agentDescription`。
 - `modelParams`：（可选）智能体使用模型的参数。
     - `temperature`：（可选）采样温度值，范围0到2。较高值（如0.8）会使输出更随机，较低值（如0.2）会使输出更专注且确定。
     - `top_p`：（可选）称为核采样的替代采样方式，模型会基于概率分布考虑结果。仅生成概率总和达到该阈值的最可能 token 组合（例如 top_p=0.9 时，模型会动态选择概率总和达 90% 的候选 token）。
