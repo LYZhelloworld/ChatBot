@@ -55,15 +55,13 @@ class AgentConfig(BaseModel):
     Attributes:
         model (str): The model used by the agent.
         baseURL (str): The URL of the LLM server API. Leave it empty if you are using Docker deployment.
-        agentDescription (PromptSchema, optional): The prompt to be used by the agent. It can be either a file or a text string.
-        userDescription (PromptSchema, optional): The prompt to be used by the user. It can be either a file or a text string.
-        historyLimit (int, optional): The maximum number of history records to be used as the context. Default is 20. Note that one pair of user-assistant chat history is counted as one record.
+        instructions (PromptSchema, optional): The prompt to be used by the agent. It can be either a file or a text string.
+        historyLimit (int, optional): The maximum number of history records to be used as the context. Default is 20.
         modelParams (optional): The parameters passed to the model.
     """
 
     model: str
     baseURL: str = "http://ollama:11434/"
-    agentDescription: PromptSchema = Field(default_factory=lambda: PromptText(type="text", content=""))
-    userDescription: PromptSchema = Field(default_factory=lambda: PromptText(type="text", content=""))
+    instructions: PromptSchema = Field(default_factory=lambda: PromptText(type="text", content=""))
     historyLimit: int = 20  # Optional, default is 20
     modelParams: ModelParams = Field(default_factory=lambda: ModelParams())

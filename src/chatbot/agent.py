@@ -12,14 +12,13 @@ from ollama import Client
 from chatbot.types import StreamedResponse
 from utils.utils import remove_think_tags
 from .types import AgentConfig, PromptSchema
-from .prompts import system_prompt, agent_description_prompt, user_description_prompt
+from .prompts import system_prompt
 
 
 BASE_PATH = os.path.dirname(os.path.abspath(sys.argv[0]))
 AGENT_FOLDER = os.path.join(BASE_PATH, "agents")
 CONFIG_FILE_NAME = "config.json"
 HISTORY_FILE_NAME = "history.json"
-SYSTEM_PROMPT_TEMPLATE = ChatPromptTemplate([('system', system_prompt)])
 
 
 class Agent:
@@ -53,9 +52,9 @@ class Agent:
         history_file_path = os.path.join(os.path.dirname(config_file_path), HISTORY_FILE_NAME)
         self.__history = FileChatMessageHistory(history_file_path, encoding='utf-8', ensure_ascii=False)
 
-        # Load description from config file.
-        self.__agent_description = self.__load_description(agent_config.agentDescription)
-        self.__user_description = self.__load_description(agent_config.userDescription)
+        # Load instructions from config file.
+        self.__system_prompt = ChatPromptTemplate([('system', system_prompt)]).format_messages(
+            instructions=self.__load_instructions(agent_config.instructions))
 
         # Create Ollama client with the provided base URL.
         self.__client = OllamaLLM(
@@ -74,6 +73,16 @@ class Agent:
         :rtype: str
         """
         return self.__name
+
+    @property
+    def history(self) -> list[BaseMessage]:
+        """
+        Returns the chat history of the agent.
+
+        :return: The chat history.
+        :rtype: list[BaseMessage]
+        """
+        return self.__history.messages
 
     @staticmethod
     def list_agents() -> list[str]:
@@ -100,7 +109,7 @@ class Agent:
         :rtype: StreamedResponse
         """
 
-        messages = self.__get_system_prompt() + self.__history.messages
+        messages = self.__system_prompt + self.__history.messages
         messages.append(HumanMessage(content=user_input))
 
         trim_messages(
@@ -126,33 +135,11 @@ class Agent:
             self.__history.add_user_message(HumanMessage(content=user_input))
             self.__history.add_ai_message(AIMessage(content=response_content))
 
-    def history(self) -> list[BaseMessage]:
+    def __load_instructions(self, prompt: PromptSchema) -> str:
         """
-        Returns the chat history of the agent.
+        Loads the instruction prompt from a file or uses the provided text.
 
-        :return: The chat history.
-        :rtype: list[BaseMessage]
-        """
-        return self.__history.messages
-
-    def __get_system_prompt(self) -> list[BaseMessage]:
-        """
-        Generates system prompt based on the user system prompt.
-
-        :return: The system prompt string.
-        :rtype: str
-        """
-
-        return SYSTEM_PROMPT_TEMPLATE.format_messages(
-            agent_description=(agent_description_prompt.format(prompt=self.__agent_description) if self.__agent_description else ""),
-            user_description=(user_description_prompt.format(prompt=self.__user_description) if self.__user_description else ""),
-        )
-
-    def __load_description(self, prompt: PromptSchema) -> str:
-        """
-        Loads the description prompt from a file or uses the provided text.
-
-        :param PromptSchema: The description prompt.
+        :param PromptSchema: The instruction prompt.
         :return: The loaded system prompt.
         :rtype: str
         """
