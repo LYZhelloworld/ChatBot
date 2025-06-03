@@ -164,8 +164,9 @@ class Agent:
         required_model = agent_config.model
 
         # Check if required model exists in server's model list
-        if any(model.model == required_model for model in models.models):
-            return
+        if all(model.model != required_model for model in models.models):
+            # Trigger model download process
+            client.pull(model=required_model)
 
-        # Trigger model download process
-        client.pull(model=required_model)
+        # Preload model
+        client.generate(model=required_model)
