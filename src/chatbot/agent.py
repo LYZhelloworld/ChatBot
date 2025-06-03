@@ -10,17 +10,16 @@ from langchain_community.chat_message_histories import FileChatMessageHistory
 from ollama import Client
 
 from chatbot.types import StreamedResponse
-from emotion.emotion import Emotion, DEFAULT_EMOTION
 from utils.utils import remove_think_tags
-from .types import AgentConfig, ChatHistoryV1, PromptSchema
+from .types import AgentConfig, PromptSchema
 from .prompts import system_prompt, agent_description_prompt, user_description_prompt
 
 
-__BASE_PATH = os.path.dirname(os.path.abspath(sys.argv[0]))
-__AGENT_FOLDER = os.path.join(__BASE_PATH, "agents")
-__CONFIG_FILE_NAME = "config.json"
-__HISTORY_FILE_NAME = "history.json"
-__SYSTEM_PROMPT_TEMPLATE = ChatPromptTemplate([('system', system_prompt)])
+BASE_PATH = os.path.dirname(os.path.abspath(sys.argv[0]))
+AGENT_FOLDER = os.path.join(BASE_PATH, "agents")
+CONFIG_FILE_NAME = "config.json"
+HISTORY_FILE_NAME = "history.json"
+SYSTEM_PROMPT_TEMPLATE = ChatPromptTemplate([('system', system_prompt)])
 
 
 class Agent:
@@ -37,7 +36,7 @@ class Agent:
         self.__name: str = name
 
         # Config file is located in `./agents/{agent_name}/config.json`.
-        config_file_path = os.path.join(__AGENT_FOLDER, name, __CONFIG_FILE_NAME)
+        config_file_path = os.path.join(AGENT_FOLDER, name, CONFIG_FILE_NAME)
         if not os.path.isfile(config_file_path):
             raise FileNotFoundError(f"Agent '{self.name}' does not exist. Please create a config file at '{config_file_path}'.")
 
@@ -48,13 +47,11 @@ class Agent:
         self.__check_model_existence(agent_config)
 
         # Load agent configuration from config file.
-        self.__model = agent_config.model
-        self.__model_params = agent_config.modelParams
         self.__history_limit = agent_config.historyLimit
 
         # Load or create history file.
-        history_file_path = os.path.join(os.path.dirname(config_file_path), __HISTORY_FILE_NAME)
-        self.__history = FileChatMessageHistory(history_file_path)
+        history_file_path = os.path.join(os.path.dirname(config_file_path), HISTORY_FILE_NAME)
+        self.__history = FileChatMessageHistory(history_file_path, encoding='utf-8', ensure_ascii=False)
 
         # Load description from config file.
         self.__agent_description = self.__load_description(agent_config.agentDescription)
@@ -64,12 +61,9 @@ class Agent:
         self.__client = OllamaLLM(
             base_url=agent_config.baseURL,
             model=agent_config.model,
-            temperature=self.__model_params.temperature,
-            top_p=self.__model_params.top_p,
+            temperature=agent_config.modelParams.temperature,
+            top_p=agent_config.modelParams.top_p,
         )
-
-        # Create emotion instance.
-        self.__emotion: Emotion = Emotion(self.__model, agent_config)
 
     @property
     def name(self) -> str:
@@ -89,25 +83,48 @@ class Agent:
         :return: A list of agent names.
         :rtype: list[str]
         """
-        if not os.path.exists(__AGENT_FOLDER):
+        if not os.path.exists(AGENT_FOLDER):
             return []
 
-        if not os.path.isdir(__AGENT_FOLDER):
-            raise NotADirectoryError(f"Agent folder '{__AGENT_FOLDER}' is not a directory.")
+        if not os.path.isdir(AGENT_FOLDER):
+            raise NotADirectoryError(f"Agent folder '{AGENT_FOLDER}' is not a directory.")
 
-        return [f for f in os.listdir(__AGENT_FOLDER) if os.path.isdir(os.path.join(__AGENT_FOLDER, f))]
+        return [f for f in os.listdir(AGENT_FOLDER) if os.path.isdir(os.path.join(AGENT_FOLDER, f))]
 
     def chat(self, user_input: str) -> StreamedResponse:
         """
         Sends a message to the chatbot and get a streamed response.
 
         :param str user_input: The user's input message.
-        :return: The chatbot's response in stream.
+        :return: The response in stream.
         :rtype: StreamedResponse
         """
 
-        for chunk in self.__chat(user_input):
+        messages = self.__get_system_prompt() + self.__history.messages
+        messages.append(HumanMessage(content=user_input))
+
+        trim_messages(
+            messages,
+            strategy="last",
+            token_counter=len,
+            max_tokens=self.__history_limit,
+            start_on="human",
+            end_on="human",
+            include_system=True,
+            allow_partial=False
+        )
+
+        response: Iterator[str] = self.__client.stream(messages)
+
+        response_content = ""
+        for chunk in response:
             yield chunk
+            response_content += chunk
+
+        response_content = remove_think_tags(response_content)
+        if response_content:
+            self.__history.add_user_message(HumanMessage(content=user_input))
+            self.__history.add_ai_message(AIMessage(content=response_content))
 
     def history(self) -> list[BaseMessage]:
         """
@@ -118,43 +135,17 @@ class Agent:
         """
         return self.__history.messages
 
-    def regenerate(self) -> StreamedResponse:
-        """
-        Regenerates the last response by re-sending the last user message.
-
-        :return: A streamed response of the regenerated assistant's reply.
-        :rtype: StreamedResponse
-        """
-
-        if len(self.__history["history"]) == 0:
-            return (_ for _ in [])  # Empty generator
-
-        last_user_message = self.__history["history"][-1]["user_message"]
-
-        self.__history["history"] = self.__history["history"][:-1]
-
-        for chunk in self.__chat(last_user_message):
-            yield chunk
-
     def __get_system_prompt(self) -> list[BaseMessage]:
         """
-        Generates system prompt based on the user system prompt and the current emotion value.
+        Generates system prompt based on the user system prompt.
 
         :return: The system prompt string.
         :rtype: str
         """
 
-        if len(self.__history["history"]) > 0:
-            # Get the last emotion value from the history.
-            emotion = self.__history["history"][-1]["emotion"]
-        else:
-            # If no history, use the default emotion value.
-            emotion = DEFAULT_EMOTION
-
-        return __SYSTEM_PROMPT_TEMPLATE.format_messages(
+        return SYSTEM_PROMPT_TEMPLATE.format_messages(
             agent_description=(agent_description_prompt.format(prompt=self.__agent_description) if self.__agent_description else ""),
             user_description=(user_description_prompt.format(prompt=self.__user_description) if self.__user_description else ""),
-            emotion_value=emotion,
         )
 
     def __load_description(self, prompt: PromptSchema) -> str:
@@ -167,48 +158,12 @@ class Agent:
         """
 
         if prompt.type == "file":
-            with open(os.path.join(__AGENT_FOLDER, self.name, prompt.path), "r", encoding="utf-8") as file:
+            with open(os.path.join(AGENT_FOLDER, self.name, prompt.path), "r", encoding="utf-8") as file:
                 return file.read().strip()
         elif prompt.type == "text":
             return prompt.content.strip()
         else:
             return ""
-
-    def __chat(self, user_input: str) -> StreamedResponse:
-        """
-        Sends a message to the chatbot and get a streamed response.
-
-        :param str user_input: The user's input message.
-        :return: The response in stream.
-        :rtype: StreamedResponse
-        """
-
-        messages = self.__get_system_prompt() + self.__history.messages
-
-        trim_messages(
-            messages,
-            strategy="last",
-            token_counter=len,
-            max_tokens=self.__history_limit,
-            start_on="human",
-            include_system=True,
-            allow_partial=False
-        )
-
-        messages.append(HumanMessage(content=user_input))
-
-        response: Iterator[str] = self.__client.stream(messages)
-
-        response_content = ""
-        for chunk in response:
-            yield chunk
-            response_content += chunk
-
-        response_content = remove_think_tags(response_content)
-        if response_content:
-            emotion = self.__emotion.get(self.__history, user_input, response_content)
-            self.__history.add_user_message(HumanMessage(content=user_input))
-            self.__history.add_ai_message(AIMessage(content=response_content, emotion=emotion))
 
     def __check_model_existence(self, agent_config: AgentConfig):
         """Check if the specified model exists in Ollama service, trigger download if not.
