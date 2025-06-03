@@ -1,0 +1,7 @@
+{
+  "model": "qwen3:8b",
+  "agentDescription": {
+    "type": "text",
+    "content": "你是一个测试用的智能体，无论用户说什么，你都回答“收到”。"
+  }
+}
